@@ -1,0 +1,44 @@
+<footer class="mt-5 py-4 bg-darken">
+  <div class="container px-4 px-lg-5">
+    <div class="d-flex flex-wrap justify-content-center align-items-baseline gap-2 text-center text-light">
+      <span>@{{sitename}}</span>
+      <span>Powered by <a class="text-light" href="https://resumis.com">Resumis</a></span>
+      {% if footer_html %}
+      <div class="footer-content">{{footer_html|safe}}</div>
+      {% endif %}
+    </div>
+  </div>
+</footer>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="toast-container position-fixed top-50 start-50 translate-middle">
+  {% for message in messages %}
+  <div role="alert" class="toast show bg-danger" aria-live="assertive"
+       aria-atomic="true" data-bs-autohide="true" data-bs-delay="1000">
+    <div class="toast-body">
+      <div class="d-flex justify-content-around">{{message}}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div class="toast-container position-fixed top-50 start-50 translate-middle">
+  <div id="toast-container" class="toast align-items-center text-bg-primary border-0" role="alert"
+       aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="1000">
+    <div class="d-flex">
+      <div class="toast-body" id="toast-text"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="{{url_for('static', filename='js/script.js')}}" type="application/javascript"></script>
+
+<script>
+    initTooltips();
+    initToasts();
+</script>

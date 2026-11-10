@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ seo.title }} - {{ sitename }}</title>
+  <meta name="keywords" content="{{seo.keywords}}">
+  <meta name="description" content="{{seo.description}}">
+  <link rel="canonical" href="{{seo.canonical}}"/>
+  {% include 'global/head.html' %}
+</head>
+<body class="bg-light">
+{% include 'global/navbar.html' %}
+
+<main class="content">
+  <div class="container mt-4 policy-content">
+    {{policy_html|safe}}
+  </div>
+</main>
+
+{% include 'global/footer.html' %}
+</body>
+</html>

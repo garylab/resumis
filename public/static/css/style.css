@@ -1,0 +1,89 @@
+html {font-family: Poppins, sans-serif;}
+body {font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji}
+html, body {height: 100%; }
+body {display: flex; flex-direction: column;}
+.fw-600 {font-weight: 600;}
+a {text-decoration: none; color: rgba(31,41,55);}
+.content {flex: 1;}
+.footer-content a {color: inherit; text-decoration: underline;}
+.footer-content > :last-child {margin-bottom: 0;}
+.footer-content, .policy-content {overflow-wrap: anywhere; min-width: 0;}
+.footer-content img, .policy-content img {max-width: 100%;}
+.footer-content pre, .policy-content pre {overflow-x: auto; text-align: left;}
+.container{max-width: 960px;}
+.bg-primary{background-color: #fff2e1!important;}
+.bg-yellow-500 {background-color: #F48C06;}
+.bg-darken{background-color: rgb(37, 38, 65);}
+.text-yellow-500 {color: #f48c06;}
+.text-darken {color: #2f327d;}
+.btn-yellow,.btn-yellow:hover {background-color: #f48c06; color: #fff; border-radius: 9999px;
+    padding-left: 1.5rem;padding-right: 1.5rem; font-size: .875rem;}
+.btn-outline-yellow, .btn-outline-yellow:hover {color: #f48c06; border-color: #f48c06; border-radius: 9999px;
+    padding-left: 1.5rem;padding-right: 1.5rem; font-size: .875rem;}
+h1 {font-size: 1.25rem;}
+h2 {font-size: 1.125rem;}
+h3, h4, h5 {font-size: 1rem;}
+.a4 {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    overflow: scroll;
+}
+
+.a4-thumbnail {
+    width: 155px;
+    height: 219px;
+    overflow: hidden;
+}
+
+/*CodeMirror*/
+.CodeMirror {
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
+    border-top: none !important;
+    border-radius: var(--bs-border-radius);
+    border-top-left-radius: unset;
+    border-top-right-radius: unset;
+    font-size: 0.875rem;
+    padding: 1rem;
+}
+
+.CodeMirror-line {
+    font-size: 0.875rem;
+}
+
+#name-input {
+    display: inline-block;
+    width: auto;
+    min-width: 200px; /* Minimum width to keep the input visible when empty */
+    border: none;
+    background: transparent;
+}
+
+.dropdown-menu input {
+    margin: 5px;
+    width: calc(100% - 10px);
+}
+
+/* Card */
+.card-image-container {
+    position: relative;
+}
+.hover-buttons {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+.card:hover .hover-buttons {
+    opacity: 1;
+}
+.confirm-delete {
+    min-width: 4rem;
+    padding: 0;
+}

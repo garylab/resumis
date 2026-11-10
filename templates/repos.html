@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Select Github Repository - {{sitename}}</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    {% include 'global/head.html' %}
+</head>
+<body class="bg-light">
+{% include 'global/navbar.html' %}
+
+<main class="content">
+    <div class="my-5">
+        <div class="container">
+            <h1 class="my-5 text-center">Select a repository and branch to continue.</h1>
+
+            <form action="{{ url_for('repo.save') }}" method="post">
+                <div class="row">
+                    <div class="col-12 col-md-8">
+                        <div class="mb-3">
+                            <label for="repoSelect" class="form-label">Select Repository</label>
+                            <select id="repoSelect" class="form-select" name="repo">
+                                <option value="" selected disabled>Select a repository</option>
+                                {% for repo in repos %}
+                                <option value="{{ repo.full_name }}"
+                                        {% if repo.full_name == selected_repo.full_name %} selected {% endif %}
+                                >{{ repo.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="branchSelect" class="form-label">Select Branch</label>
+                            <select id="branchSelect" class="form-select" name="branch" disabled>
+                                <option value="" selected disabled>Select a branch</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-md-12">
+                        <div class="mb-3 text-center">
+                            <button type="submit" class="btn btn-sm btn-primary me-2">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</main>
+
+
+{% include 'global/footer.html' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const repoSelect = document.getElementById('repoSelect');
+        const branchesApiUrl = '{{ url_for('repo.get_branches') }}';
+        const defaultBranch = {{ selected_repo.branch | tojson }};
+
+        if (repoSelect.value) {
+            fetchBranches(branchesApiUrl + '?repo=' + encodeURIComponent(repoSelect.value), defaultBranch);
+        }
+
+        repoSelect.addEventListener('change', function (e) {
+            fetchBranches(branchesApiUrl + '?repo=' + encodeURIComponent(e.currentTarget.value));
+        });
+    });
+
+    initFormSubmits();
+</script>
+</body>
+</html>

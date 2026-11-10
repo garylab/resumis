@@ -1,0 +1,40 @@
+<nav class="navbar navbar-expand-lg bg-primary">
+    <div class="container">
+      <a class="navbar-brand fw-600" href="/">{{sitename}}</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse fw-light" id="navbarNav">
+            <ul class="navbar-nav ms-auto mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.path == '/' else '' }}" aria-current="page" href="/">Home</a>
+                </li>
+                {% if user %}
+                    <li class="nav-item ms-3">
+                        <a class="nav-link" href="{{url_for('resume.get_resumes')}}">My Resumes</a>
+                    </li>
+                    <li class="nav-item dropdown ms-3">
+                        <button class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{user.name}}
+                            <span class="small text-success">{% if user.is_pro %}[Pro]{% endif %}</span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{url_for('auth.logout')}}">Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-yellow fw-light" href="{{url_for('auth.login')}}">
+                            <i class="bi bi-github"></i> Sign in
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+
+        </div>
+    </div>
+</nav>

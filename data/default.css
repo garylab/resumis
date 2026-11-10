@@ -1,0 +1,123 @@
+:root {
+    --theme-color: #007ea5;
+    --main-color: #000000;
+    --global-font-size: 9pt;
+    --header-font-family: 'Georgia', 'Times New Roman', 'sans-serif';
+    --global-font-family: 'Times New Roman', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif';
+    --underline-color: #eee;
+    --page-margin: 9mm;
+}
+
+html, body {
+    margin:0;
+    padding:0;
+    font-size: var(--global-font-size)!important;
+    color: #333;
+    font-weight: 400;
+    font-family: var(--global-font-family)!important;
+    background-color: white;
+}
+
+body {
+    padding: var(--page-margin);
+}
+
+@media print {
+    @page
+    {
+        size: A4;
+        margin: var(--page-margin);
+    }
+    body {
+        padding: 0;
+        margin: 0;
+    }
+}
+
+a{
+    text-decoration: none;
+    color: var(--main-color);
+}
+p a{
+    text-decoration: underline;
+    text-decoration-color: var(--underline-color);
+}
+b, strong {font-weight: 700}
+p, blockquote {margin: 0;}
+
+h1 {
+    font-size: 20pt;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 7pt!important;
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: var(--header-font-family);
+    border: none;
+    line-height: 1.2;
+    margin: 9pt 0 1pt;
+}
+
+h1, h2, h3, h4, h5, h2 a, h3 a, h3 strong, h3 b {
+    color: var(--theme-color);
+}
+
+h1 + p,
+h1 + p strong,
+h1 + p a {
+    font-size: var(--global-font-size);
+    color: #666;
+}
+
+h1 + p {
+    text-align: center;
+    line-height: 1;
+}
+
+h2 {
+    font-size: 13pt;
+    font-weight: 600;
+    border-bottom: 1px solid var(--underline-color);
+    margin: 17pt 0 1pt!important;
+}
+
+h3, h4, h5, h6 {
+    font-size: var(--global-font-size);
+    font-weight: 600;
+}
+
+em {
+    float: right;
+    font-weight: 200;
+    font-style: normal;
+}
+
+h3 + blockquote p {
+    font-weight: bold;
+}
+
+p, ul li, ol li {
+    line-height: 1.75;
+}
+
+/* List */
+ul,
+ol,
+ul > li,
+ol > li {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+ul, ol {
+    padding-left: 1rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+ul {
+    columns: 2;
+    -webkit-columns: 2;
+    -moz-columns: 2;
+}

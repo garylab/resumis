@@ -1,0 +1,26 @@
+{
+  "name": "resumis-cf",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run",
+    "test": "npm run build && node --test test/*.test.js",
+    "test:browser": "playwright test",
+    "test:parity": "npm run build && node test/compare-python.mjs"
+  },
+  "dependencies": {
+    "markdown-it": "15.0.3",
+    "nunjucks": "3.2.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "wrangler": "4.160.0"
+  }
+}

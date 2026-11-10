@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "resumis-cf",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-10",
+  "workers_dev": true,
+  "dev": {
+    "ip": "0.0.0.0",
+    "port": 8988,
+    "local_protocol": "http"
+  },
+  "build": {
+    "command": "npm run build",
+    "watch_dir": ["templates", "data", "scripts"]
+  },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+  "observability": { "enabled": true }
+}

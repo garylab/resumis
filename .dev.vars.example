@@ -1,0 +1,14 @@
+GITHUB_CLIENT_ID=your-github-oauth-client-id
+GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
+SESSION_SECRET=replace-with-a-random-secret-of-at-least-32-characters
+# For HTTPS served through a local reverse proxy:
+# PUBLIC_ORIGIN=https://dev.resumis.com
+
+SITE_NAME=Resumis
+PRIVACY_POLICY_CONTENT=""
+TERMS_OF_SERVICE_CONTENT=""
+FOOTER_CONTENT=""
+# Markdown examples (use \n for newlines inside double quotes):
+# PRIVACY_POLICY_CONTENT="# Privacy Policy\n\nYour privacy policy."
+# TERMS_OF_SERVICE_CONTENT="# Terms of Service\n\nYour terms."
+# FOOTER_CONTENT="[Privacy](/privacy-policy) · [Terms](/terms-of-service)"

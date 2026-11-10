@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{sitename}} - Build Markdown Resume and Save to your Github</title>
+  <meta name="keywords" content="markdown resume, Github, resume builder, cv builder">
+  <meta name="description"
+        content="{{sitename}} is an online markdown resume builder, allows you to create online cv free and save to your own Github!">
+
+  <meta property="og:locale" content="en">
+  <meta property="og:url" content="{{url_for('home.home', _external=True)}}">
+  <meta property="og:title" content="{{sitename}} - Free Online Markdown Resume Builder">
+  <meta property="og:description"
+        content="{{sitename}} is an online markdown resume builder, allows you to create online cv free and save to your own Github✅🔐!">
+
+  <link rel="canonical" href="{{url_for('home.home', _external=True)}}"/>
+
+  {% include 'global/head.html' %}
+</head>
+<body class="bg-light">
+{% include 'global/navbar.html' %}
+
+<main class="content">
+  <div class="bg-primary mt-0 p-0" style="min-height: 450px;">
+    <div class="container">
+      <div style="padding-top: 7rem; padding-bottom: 3rem;">
+          <h1 class="text-darken text-center fw-bold" style="font-size: 3rem;">
+            Build your online <em class="text-yellow-500 fst-normal">Markdown Resume</em><br/>
+            then save to your <em class="text-yellow-500 fst-normal">Own GitHub</em>
+          </h1>
+
+          <div class="d-flex justify-content-center">
+            <div class="mt-4 d-inline-block">
+                <table class="table table-sm fw-light text-center small">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Free</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-left">Markdown format</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                          <td class="text-left">Unlimited Resumes</td>
+                          <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Real-time preview</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>PDF download</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Fully customizable layout and themes</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Built-in templates</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>All your resumes will save to your own GitHub repository</td>
+                            <td>✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <a class="btn btn-outline-yellow" href="/create/project-manager">
+              Try it now
+            </a>
+          </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="container">
+    <h2 class="text-center mt-5">Resume Templates</h2>
+    <p class="text-center fw-light text-muted small">Free to use</p>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 mt-4">
+
+      {% for name in template_names %}
+      <div class="col">
+        <div class="card border-0 bg-transparent mt-4">
+          <a href="{{url_for('home.template', slug=to_slug(name))}}" class="text-center">
+            <img class="card-img-top border radius a4-thumbnail"
+                 src="{{url_for('static', filename='img/screenshots/data-scientist.png')}}"
+                 alt="{{name}} Resume Template" title="{{name}} Resume Template">
+          </a>
+          <div class="card-body px-0">
+
+            <h3 class="card-title text-center">
+              <a href="{{url_for('home.template', slug=to_slug(name))}}">
+                {{name}} Resume
+              </a>
+            </h3>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+</main>
+
+{% include 'global/footer.html' %}
+</body>
+</html>

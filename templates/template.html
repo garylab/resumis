@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{resume.name}} Resume Template - {{sitename}}</title>
+  <meta name="keywords" content="{{resume.name}} Resume, Resume Template">
+  <meta name="description" content="Create a {{resume.name}} resume from free template in 5 minutes, and save it to your own Github easily!">
+
+  <meta property="og:locale" content="en">
+  <meta property="og:url" content="{{url_for('home.template', slug=to_slug(resume.name), _external=True)}}">
+  <meta property="og:title" content="{{resume.name}} Resume Template - {{sitename}}">
+  <meta property="og:description"
+        content="Create a {{resume.name}} resume from free template in 5 minutes, and save it to your own Github easily!">
+
+  <link rel="canonical" href="{{url_for('home.template', slug=to_slug(resume.name), _external=True)}}"/>
+
+  <style>
+      #resume-content {
+        {{resume.css|safe}}
+      }
+  </style>
+  {% include 'global/head.html' %}
+</head>
+<body class="bg-light">
+  {% include 'global/navbar.html' %}
+
+  <main class="container content">
+    <h1 class="text-center mt-5 mb-4">{{resume.name}} Resume Template</h1>
+    <div class="text-center">
+      <a class="btn btn-outline-yellow" href="{{url_for('home.create_from_template', template_slug=to_slug(resume.name))}}">
+        Use This Template
+      </a>
+    </div>
+
+    <div id="resume-content" class="my-4 border a4 mx-auto">
+        {{resume.html|safe}}
+    </div>
+
+    <div class="text-center my-4">
+      <a class="btn btn-outline-yellow" href="{{url_for('home.create_from_template', template_slug=to_slug(resume.name))}}">
+          Use This Template
+      </a>
+    </div>
+  </main>
+
+  {% include 'global/footer.html' %}
+</body>
+</html>
