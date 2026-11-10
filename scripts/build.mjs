@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
 import { readFile, readdir, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import MarkdownIt from 'markdown-it';
 import nunjucks from 'nunjucks';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -26,18 +26,18 @@ for (const name of names) {
 }
 await writeFile(`${output}/templates.js`, `${compiled}\nexport default templates;\n`);
 
-const rendered = JSON.parse(await readFile(`${root}data/rendered.json`, 'utf8'));
+const markdown = new MarkdownIt({ html: false });
+markdown.renderer.rules.link_open = (tokens, index, options, env, renderer) => {
+  tokens[index].attrSet('rel', 'noopener noreferrer nofollow');
+  tokens[index].attrSet('target', '_blank');
+  return renderer.renderToken(tokens, index, options);
+};
+const files = (await readdir(`${root}data/resumes`)).filter(name => name.endsWith('.md')).sort();
 const resumes = {};
-for (const [name, snapshot] of Object.entries(rendered)) {
-  const bytes = await readFile(`${root}data/resumes/${name}.md`);
-  if (createHash('sha256').update(bytes).digest('hex') !== snapshot.sha256) {
-    throw new Error(`Preview for ${name} is stale. Run scripts/render-markdown.py with markdown==3.6.`);
-  }
-  resumes[name] = { name, content: bytes.toString('utf8'), html: snapshot.html };
-}
-const files = (await readdir(`${root}data/resumes`)).filter(name => name.endsWith('.md'));
-if (files.length !== Object.keys(resumes).length) {
-  throw new Error('Template list changed. Run scripts/render-markdown.py with markdown==3.6.');
+for (const file of files) {
+  const name = file.slice(0, -3);
+  const content = await readFile(`${root}data/resumes/${file}`, 'utf8');
+  resumes[name] = { name, content, html: markdown.render(content) };
 }
 const css = await readFile(`${root}data/default.css`, 'utf8');
 await writeFile(`${output}/data.js`, `export const resumes = ${JSON.stringify(resumes)};\nexport const css = ${JSON.stringify(css)};\n`);

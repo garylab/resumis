@@ -16,6 +16,8 @@ def canonical(value):
     # The configurable footer intentionally replaces the original footer.
     # Its new branding and Markdown behavior are covered by app tests.
     value = re.sub(r'<footer\b[^>]*>.*?</footer>', '', value, flags=re.DOTALL)
+    # Analytics is now optional and configured per request, covered by app tests.
+    value = re.sub(r'<!-- Google tag \(gtag\.js\) -->\s*<script\b[^>]*>.*?</script>\s*<script>.*?</script>', '', value, flags=re.DOTALL)
     return re.sub(r'\s+', ' ', html.unescape(value)).strip()
 
 for case in data['cases']:
@@ -40,4 +42,4 @@ for case in data['cases']:
         import difflib
         delta = '\n'.join(difflib.unified_diff(expected.splitlines(), case['actual'].splitlines()))
         raise AssertionError(f"Rendering differs for {case['label']}:\n{delta}")
-print(f"{len(data['cases'])} rendered pages match the original Jinja templates (excluding the customized footer and ignoring whitespace/entity spelling).")
+print(f"{len(data['cases'])} rendered pages match the original Jinja templates (excluding the customized footer and analytics, and ignoring whitespace/entity spelling).")

@@ -1,7 +1,7 @@
 <footer class="mt-5 py-4 bg-darken">
   <div class="container px-4 px-lg-5">
     <div class="d-flex flex-wrap justify-content-center align-items-baseline gap-2 text-center text-light">
-      <span>@{{sitename}}</span>
+      <span><a class="text-light" href="{{url_for('home.home')}}">{{sitename}}</a></span>
       <span>Powered by <a class="text-light" href="https://resumis.com">Resumis</a></span>
       {% if footer_html %}
       <div class="footer-content">{{footer_html|safe}}</div>

@@ -9,8 +9,9 @@ test('Workers runtime serves home, templates, assets, and policy pages', async (
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Resume Templates', exact: true })).toBeVisible();
   await expect(page.locator('.card')).toHaveCount(8);
-  await expect(page.locator('footer')).toContainText('@Resumis');
-  await expect(page.locator('footer').getByRole('link', { name: 'Resumis', exact: true })).toHaveAttribute('href', 'https://resumis.com');
+  await expect(page.locator('footer')).toContainText('Resumis');
+  await expect(page.locator('footer a[href="/"]')).toHaveText('Resumis');
+  await expect(page.locator('footer a[href="https://resumis.com"]')).toHaveText('Resumis');
   await page.getByRole('link', { name: 'Project Manager Resume', exact: true }).click();
   await expect(page.locator('#resume-content')).toContainText('James Smith');
   await expect(page.locator('#resume-content a').first()).toHaveAttribute('target', '_blank');

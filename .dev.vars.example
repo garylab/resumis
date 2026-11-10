@@ -5,6 +5,8 @@ SESSION_SECRET=replace-with-a-random-secret-of-at-least-32-characters
 # PUBLIC_ORIGIN=https://dev.resumis.com
 
 SITE_NAME=Resumis
+# Optional Google Analytics measurement ID (e.g. G-XXXXXXXXXX); empty disables analytics.
+GA_MEASUREMENT_ID=""
 PRIVACY_POLICY_CONTENT=""
 TERMS_OF_SERVICE_CONTENT=""
 FOOTER_CONTENT=""

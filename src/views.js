@@ -34,10 +34,12 @@ renderer.addFilter('tojson', value => new nunjucks.runtime.SafeString(JSON.strin
 
 export function render(name, context, request, session, env = {}) {
   const url = new URL(request.url);
+  const gaMeasurementId = env.GA_MEASUREMENT_ID?.trim() || '';
   const messages = session.messages || [];
   delete session.messages;
   const html = renderer.render(name, {
     sitename: siteName(env), footer_html: renderMarkdown(env.FOOTER_CONTENT),
+    ga_measurement_id: /^G-[A-Z0-9]+$/.test(gaMeasurementId) ? gaMeasurementId : '',
     user: session.user || null, repo: session.repo || null,
     base_url: `${url.origin}${url.pathname}`, now: { year: new Date().getUTCFullYear() },
     request: { path: url.pathname }, seo: { title: '', keywords: '', description: '', canonical: '' },

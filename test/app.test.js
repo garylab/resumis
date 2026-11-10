@@ -38,7 +38,7 @@ test('all public routes, SEO, templates, and Markdown/CSS defaults match the sou
   const html = await home.text();
   assert.match(html, /Build your online/);
   assert.match(html, /href="https:\/\/resumis.example\/"/);
-  assert.match(html, /@Resumis/);
+  assert.match(html, /<a[^>]*href="\/">Resumis<\/a>/);
   assert.doesNotMatch(html, /\{%|\{\{/);
   assert.equal(Object.keys(resumes).length, 8);
   for (const [name, resume] of Object.entries(resumes)) {
@@ -73,7 +73,7 @@ test('site name and Markdown policies/footer are configured per request', async 
   assert.match(home, /<title>My CV &amp; Careers -/);
   assert.match(home, /class="navbar-brand fw-600" href="\/">My CV &amp; Careers<\/a>/);
   const footer = home.match(/<footer\b[\s\S]*?<\/footer>/)[0];
-  assert.match(footer, /@My CV &amp; Careers/);
+  assert.match(footer, /<a[^>]*href="\/">My CV &amp; Careers<\/a>/);
   assert.match(footer, /Powered by <a[^>]*href="https:\/\/resumis.com">Resumis<\/a>/);
   assert.match(footer, /<a href="\/privacy-policy">Privacy<\/a>/);
   assert.match(footer, /<strong>Made for you<\/strong>/);
@@ -99,10 +99,28 @@ test('site name and Markdown policies/footer are configured per request', async 
   assert.doesNotMatch(await (await defaults.request('/')).text(), /My CV|Made for you/);
 });
 
+test('Google Analytics uses the configured measurement ID and is otherwise disabled', async () => {
+  const configured = await client({}, { ...env, GA_MEASUREMENT_ID: ' G-TEST123456 ' });
+  for (const path of ['/', '/create', '/template/project-manager', '/privacy-policy']) {
+    const html = await (await configured.request(path)).text();
+    assert.match(html, /src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-TEST123456"/);
+    assert.match(html, /gtag\('config', "G-TEST123456"\)/);
+  }
+  for (const id of [undefined, '', '  ', 'invalid', 'G-TEST\');alert(1)//', 'G-TEST</script><script>alert(1)</script>']) {
+    const disabled = await client({}, { ...env, GA_MEASUREMENT_ID: id });
+    const html = await (await disabled.request('/')).text();
+    assert.doesNotMatch(html, /googletagmanager|gtag\(|dataLayer|alert\(1\)/);
+  }
+  const alternate = await client({}, { ...env, GA_MEASUREMENT_ID: 'G-OTHER12345' });
+  const html = await (await alternate.request('/')).text();
+  assert.match(html, /gtag\('config', "G-OTHER12345"\)/);
+  assert.doesNotMatch(html, /G-TEST123456/);
+});
+
 test('empty branding/content uses defaults and HTML is escaped in configured content', async () => {
   const empty = await client({}, { ...env, SITE_NAME: '  ', PRIVACY_POLICY_CONTENT: ' \n ', TERMS_OF_SERVICE_CONTENT: '', FOOTER_CONTENT: '' });
   const home = await (await empty.request('/')).text();
-  assert.match(home, /@Resumis/);
+  assert.match(home, /<a[^>]*href="\/">Resumis<\/a>/);
   assert.doesNotMatch(home, /class="footer-content"/);
   for (const path of ['/privacy-policy', '/terms-of-service']) {
     assert.match(await (await empty.request(path)).text(), /Effective Date/);
