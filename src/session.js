@@ -1,4 +1,5 @@
 const COOKIE = 'resumis_session';
+const REPO_COOKIE = 'resumis_repo';
 const MAX_AGE = 31 * 24 * 60 * 60;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -20,22 +21,22 @@ async function key(secret) {
 }
 
 // Encrypt as well as authenticate: the GitHub access token stays opaque in the cookie.
-export async function sealSession(data, secret, now = Date.now()) {
+export async function sealSession(data, secret, now = Date.now(), purpose = COOKIE) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv, additionalData: encoder.encode(COOKIE) },
+    { name: 'AES-GCM', iv, additionalData: encoder.encode(purpose) },
     await key(secret), encoder.encode(JSON.stringify({ data, expires: now + MAX_AGE * 1000 })),
   );
   return `${base64url(iv)}.${base64url(new Uint8Array(encrypted))}`;
 }
 
-export async function openSession(value, secret, now = Date.now()) {
+export async function openSession(value, secret, now = Date.now(), purpose = COOKIE) {
   if (!value || !secret || secret.length < 32 || value.length > 4096) return {};
   try {
     const parts = value.split('.');
     if (parts.length !== 2) return {};
     const clear = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: unbase64url(parts[0]), additionalData: encoder.encode(COOKIE) },
+      { name: 'AES-GCM', iv: unbase64url(parts[0]), additionalData: encoder.encode(purpose) },
       await key(secret), unbase64url(parts[1]),
     );
     const payload = JSON.parse(decoder.decode(clear));
@@ -45,15 +46,39 @@ export async function openSession(value, secret, now = Date.now()) {
   }
 }
 
+function cookieValue(request, name) {
+  return (request.headers.get('Cookie') || '').split(';')
+    .map(part => part.trim()).find(part => part.startsWith(`${name}=`))?.slice(name.length + 1);
+}
+
+function cookieAttributes(request) {
+  return `Path=/; HttpOnly; SameSite=Lax${new URL(request.url).protocol === 'https:' ? '; Secure' : ''}`;
+}
+
 export async function loadSession(request, env) {
-  const value = (request.headers.get('Cookie') || '').split(';')
-    .map(part => part.trim()).find(part => part.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
-  return openSession(value, env.SESSION_SECRET);
+  return openSession(cookieValue(request, COOKIE), env.SESSION_SECRET);
+}
+
+export async function loadRepoPreference(request, env, userId) {
+  const preference = await openSession(cookieValue(request, REPO_COOKIE), env.SESSION_SECRET, Date.now(), REPO_COOKIE);
+  if (preference.userId !== userId || typeof preference.repo?.full_name !== 'string'
+    || !/^[^/\s]+\/[^/\s]+$/.test(preference.repo.full_name)
+    || typeof preference.repo.branch !== 'string' || !preference.repo.branch.trim()) return null;
+  return preference.repo;
+}
+
+export async function rememberRepo(response, request, env, userId, repo) {
+  // Persist only an account-scoped preference, never GitHub credentials.
+  const value = await sealSession({ userId, repo }, env.SESSION_SECRET, Date.now(), REPO_COOKIE);
+  if (value.length > 3800) throw new Error('Repository preference exceeds cookie size limit');
+  const headers = new Headers(response.headers);
+  headers.append('Set-Cookie', `${REPO_COOKIE}=${value}; ${cookieAttributes(request)}; Max-Age=${MAX_AGE}`);
+  return new Response(response.body, { status: response.status, headers });
 }
 
 export async function saveSession(response, data, request, env) {
   const headers = new Headers(response.headers);
-  const attributes = `Path=/; HttpOnly; SameSite=Lax${new URL(request.url).protocol === 'https:' ? '; Secure' : ''}`;
+  const attributes = cookieAttributes(request);
   if (Object.keys(data).length === 0) {
     headers.append('Set-Cookie', `${COOKIE}=; ${attributes}; Max-Age=0`);
   } else {

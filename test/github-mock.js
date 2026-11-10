@@ -32,7 +32,9 @@ export function githubMock() {
     const url = new URL(input);
     const method = init.method || 'GET';
     calls.push({ url, method, ...init });
-    if (failure && (!failure.method || failure.method === method)) return Response.json({ message: failure.message }, { status: failure.status });
+    if (failure && (!failure.method || failure.method === method) && (!failure.path || failure.path === url.pathname)) {
+      return Response.json({ message: failure.message }, { status: failure.status });
+    }
     if (url.href === 'https://github.com/login/oauth/access_token') {
       assert.equal(new URLSearchParams(init.body).get('code'), 'valid-code');
       return Response.json({ access_token: 'test-github-token' });
@@ -71,5 +73,5 @@ export function githubMock() {
     }
     throw new Error(`Unexpected ${method} ${url.href}`);
   };
-  return { files, calls, repos, branches, put, fetcher, fail: (status, message, method) => { failure = { status, message, method }; } };
+  return { files, calls, repos, branches, put, fetcher, fail: (status, message, method, path) => { failure = { status, message, method, path }; } };
 }

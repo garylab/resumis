@@ -1,5 +1,5 @@
 import { Github, GithubError } from './github.js';
-import { loadSession, saveSession } from './session.js';
+import { loadSession, saveSession, loadRepoPreference, rememberRepo } from './session.js';
 import { render, fromSlug, urlFor } from './views.js';
 import { resumes, css } from './generated/data.js';
 import { publicRequest } from './origin.js';
@@ -170,6 +170,15 @@ export function createApp(fetcher = (...args) => fetch(...args)) {
             user: { id: user.id, username: user.login, name: user.name, email: user.email, token: token.access_token },
             repo: { full_name: '', branch: '' },
           };
+          const remembered = await loadRepoPreference(request, env, user.id);
+          if (remembered) {
+            try {
+              const branches = await github.branches(remembered.full_name);
+              if (branches.some(branch => branch.name === remembered.branch)) session.repo = remembered;
+            } catch {
+              // A stale preference or unavailable GitHub API must not block sign-in.
+            }
+          }
           return redirect(next);
         }
 
@@ -193,7 +202,7 @@ export function createApp(fetcher = (...args) => fetch(...args)) {
           const branch = field('branch').trim();
           if (!/^[^/\s]+\/[^/\s]+$/.test(full_name) || !branch) return error('Invalid repo name or branch name');
           session.repo = { full_name, branch };
-          return success('Repo saved', '/resume');
+          return rememberRepo(success('Repo saved', '/resume'), request, env, session.user.id, session.repo);
         }
         if (!session.repo?.full_name || !session.repo?.branch) {
           return isApi ? error('Please select your Github Repo and branch', 401, '/repos') : redirect('/repos');

@@ -70,6 +70,7 @@ Start sign-in from that same origin. The editor and PDF export work without sign
 - Eight resume templates, Markdown/CSS editing, and live preview.
 - PDF export through the browser’s **Save as PDF** option.
 - GitHub sign-in, repository/branch selection, and resume creation, editing, renaming, duplication, and deletion.
+- The last saved repository and branch are remembered in this browser for 31 days, including after logout or browser restart. On sign-in with the same GitHub account, the app restores them if the branch is still accessible. The encrypted preference cookie contains no GitHub token; clearing site cookies forgets the selection.
 - Files stay in your repository as `<resume name>/resume.md` and `style.css`.
 
 Existing GitHub resumes work unchanged. Sign in again when switching from Flask.

@@ -14,20 +14,24 @@ const repo = { full_name: 'gary/resumes', branch: 'feature/resumes & css' };
 async function client(session = {}, settings = env) {
   const mock = githubMock();
   const app = createApp(mock.fetcher);
-  let cookie = Object.keys(session).length ? `resumis_session=${await sealSession(session, settings.SESSION_SECRET)}` : '';
+  const cookies = new Map();
+  if (Object.keys(session).length) cookies.set('resumis_session', await sealSession(session, settings.SESSION_SECRET));
   return {
-    mock,
+    mock, cookies,
     async request(path, { form, method = form ? 'POST' : 'GET', headers = {} } = {}) {
       const request = new Request(`${origin}${path}`, {
-        method, headers: { ...(cookie ? { Cookie: cookie } : {}), ...headers },
+        method, headers: { Cookie: [...cookies].map(([name, value]) => `${name}=${value}`).join('; '), ...headers },
         body: form ? new URLSearchParams(form) : undefined,
       });
       const response = await app.fetch(request, settings);
-      const setCookie = response.headers.get('Set-Cookie');
-      if (setCookie) cookie = setCookie.split(';')[0];
+      for (const setCookie of response.headers.getSetCookie()) {
+        const [name, value] = setCookie.split(';')[0].split('=');
+        if (/Max-Age=0(?:;|$)/.test(setCookie)) cookies.delete(name);
+        else cookies.set(name, value);
+      }
       return response;
     },
-    session: () => openSession(cookie.split('=').slice(1).join('='), settings.SESSION_SECRET),
+    session: () => openSession(cookies.get('resumis_session'), settings.SESSION_SECRET),
   };
 }
 
@@ -255,7 +259,7 @@ test('Wrangler-rewritten origin headers allow same-site saves and still reject c
     const response = await save(headerOrigin);
     assert.equal(response.status, 200);
     assert.equal((await response.json()).message, 'Repo saved');
-    const savedCookie = response.headers.get('Set-Cookie').split(';')[0].split('=').slice(1).join('=');
+    const savedCookie = response.headers.getSetCookie().find(cookie => cookie.startsWith('resumis_session=')).split(';')[0].split('=').slice(1).join('=');
     assert.deepEqual((await openSession(savedCookie, env.SESSION_SECRET)).repo,
       { full_name: 'gary/selected', branch: 'feature/resume' });
   }
@@ -287,6 +291,78 @@ test('repo/branch selection, pagination, escaped branch script, and persistence'
   const saved = await browser.request('/repos/save', { form: { repo: 'gary/other', branch: 'new-branch' } });
   assert.deepEqual(await saved.json(), { success: true, message: 'Repo saved', data: {}, redirectUrl: '/resume' });
   assert.deepEqual((await browser.session()).repo, { full_name: 'gary/other', branch: 'new-branch' });
+});
+
+async function signIn(browser) {
+  const login = await browser.request('/auth/login');
+  const state = new URL(login.headers.get('Location')).searchParams.get('state');
+  return browser.request(`/auth/callback?code=valid-code&state=${state}`);
+}
+
+test('repository preference survives logout and browser restart without persisting credentials', async () => {
+  for (const reset of ['logout', 'restart']) {
+    const browser = await client({ user });
+    await browser.request('/repos/save', { form: { repo: repo.full_name, branch: 'main' } });
+    const saved = await browser.request('/repos/save', { form: { repo: repo.full_name, branch: repo.branch } });
+    const preferenceCookie = saved.headers.getSetCookie().find(cookie => cookie.startsWith('resumis_repo='));
+    assert.match(preferenceCookie, /Path=\/; HttpOnly; SameSite=Lax; Secure; Max-Age=2678400/);
+    const preference = browser.cookies.get('resumis_repo');
+    assert.deepEqual(await openSession(preference, env.SESSION_SECRET, Date.now(), 'resumis_repo'), { userId: user.id, repo });
+    // Preference cookies cannot be substituted for authentication cookies.
+    assert.deepEqual(await openSession(preference, env.SESSION_SECRET), {});
+    if (reset === 'logout') await browser.request('/auth/logout');
+    else browser.cookies.delete('resumis_session');
+    assert.deepEqual(await browser.session(), {});
+    assert.equal(browser.cookies.get('resumis_repo'), preference);
+    assert.equal((await browser.request('/resume')).headers.get('Location'), '/');
+    assert.equal((await signIn(browser)).status, 302);
+    assert.deepEqual((await browser.session()).repo, repo);
+    assert.equal((await browser.request('/resume')).status, 200);
+    const picker = await (await browser.request('/repos')).text();
+    assert.match(picker, /value="gary\/resumes"\s+selected/);
+    assert.match(picker, /"feature\/resumes \\u0026 css"/);
+  }
+});
+
+test('unusable preferences are ignored and cannot cross GitHub accounts', async () => {
+  const preferences = [
+    'invalid-cookie',
+    await sealSession({ userId: 999, repo }, env.SESSION_SECRET, Date.now(), 'resumis_repo'),
+    await sealSession({ userId: user.id, repo }, env.SESSION_SECRET, Date.now() - 32 * 86400_000, 'resumis_repo'),
+    await sealSession({ userId: user.id, repo: { full_name: repo.full_name, branch: '' } }, env.SESSION_SECRET, Date.now(), 'resumis_repo'),
+    await sealSession({ userId: user.id, repo }, 'a-different-secret-with-at-least-32-characters', Date.now(), 'resumis_repo'),
+    await sealSession({ userId: user.id, repo }, env.SESSION_SECRET),
+  ];
+  for (const preference of preferences) {
+    const browser = await client();
+    browser.cookies.set('resumis_repo', preference);
+    assert.equal((await signIn(browser)).status, 302);
+    assert.deepEqual((await browser.session()).repo, { full_name: '', branch: '' });
+    assert.equal(browser.mock.calls.filter(call => call.url.pathname.endsWith('/branches')).length, 0);
+    assert.equal((await browser.request('/resume')).headers.get('Location'), '/repos');
+  }
+});
+
+test('missing branches or inaccessible repositories fall back to selection without blocking sign-in', async () => {
+  for (const failure of [null, 403, 404, 502]) {
+    const browser = await client({ user });
+    await browser.request('/repos/save', { form: { repo: repo.full_name, branch: repo.branch } });
+    await browser.request('/auth/logout');
+    if (failure) browser.mock.fail(failure, 'Repository unavailable', 'GET', '/repos/gary/resumes/branches');
+    else browser.mock.branches.splice(0);
+    assert.equal((await signIn(browser)).status, 302);
+    assert.deepEqual((await browser.session()).user, user);
+    assert.deepEqual((await browser.session()).repo, { full_name: '', branch: '' });
+    assert.equal((await browser.request('/resume')).headers.get('Location'), '/repos');
+  }
+});
+
+test('invalid repository saves do not overwrite the remembered selection', async () => {
+  const browser = await client({ user });
+  await browser.request('/repos/save', { form: { repo: repo.full_name, branch: repo.branch } });
+  const preference = browser.cookies.get('resumis_repo');
+  assert.equal((await browser.request('/repos/save', { form: { repo: '', branch: '' } })).status, 400);
+  assert.equal(browser.cookies.get('resumis_repo'), preference);
 });
 
 test('full resume lifecycle with Unicode names/content and branch-scoped GitHub commits', async () => {
