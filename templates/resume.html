@@ -4,128 +4,87 @@
   <title>{{ seo.title }} - {{ sitename }}</title>
   <meta name="keywords" content="{{seo.keywords}}">
   <meta name="description" content="{{seo.description}}">
-
   <meta property="og:locale" content="en">
   <meta property="og:url" content="{{seo.canonical}}">
   <meta property="og:title" content="{{ seo.title }} - {{ sitename }}">
   <meta property="og:description" content="{{seo.description}}">
-
   <link rel="canonical" href="{{seo.canonical}}"/>
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
   {% include 'global/head.html' %}
+  <link rel="stylesheet" href="{{url_for('static', filename='css/editor.css')}}">
 </head>
-<body class="bg-light">
+<body class="bg-light resume-editor-page">
 {% include 'global/navbar.html' %}
 
-<main class="container-fluid content">
+<main class="content editor-main">
   <form id="saveResume" action="{{url_for('resume.save')}}" method="post">
     <input type="hidden" name="oldName" value="{{old_name}}">
-
-    <div class="my-3">
-      <div class="d-flex justify-content-center d-inline-block" onclick="enableEditing()">
-        <h1 id="name-text" class="text-center fw-normal" style="height: 36px; line-height: 36px; font-size: 1rem;">{{ name }}</h1>
-        <input type="text" id="name-input" name="name" value="{{ name }}" class="form-control d-none text-center"
-               onblur="saveEditing()" oninput="adjustInputWidth(this)" onfocus="adjustInputWidth(this)"/>
+    <div class="editor-toolbar">
+      <div class="editor-title">
+        <span class="editor-eyebrow">RESUME EDITOR</span>
+        <button type="button" id="name-text" class="resume-name" title="Rename resume">{{name}} <i class="bi bi-pencil" aria-hidden="true"></i></button>
+        <label class="visually-hidden" for="name-input">Resume name</label>
+        <input type="text" id="name-input" name="name" value="{{name}}" class="form-control d-none"/>
+      </div>
+      <div class="editor-actions">
+        <a class="btn btn-sm btn-light border" href="{{url_for('resume.get_resumes')}}">Back</a>
+        <button type="submit" class="btn btn-outline-yellow">Save</button>
+        <button type="button" id="export-pdf" class="btn btn-yellow"><i class="bi bi-download" aria-hidden="true"></i> Export PDF</button>
       </div>
     </div>
 
-    <div class="d-flex justify-content-evenly flex-wrap">
-      <div class="">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content"
-                    type="button" role="tab" aria-controls="content" aria-selected="true">Markdown
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="style-tab" data-bs-toggle="tab" data-bs-target="#style" type="button"
-                    role="tab" aria-controls="style" aria-selected="false">Style
-            </button>
-          </li>
-        </ul>
-        <div class="tab-content a4" id="myTabContent">
-          <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="content-tab" id="content">
-            <textarea class="form-control" rows="10" name="content">{{content}}</textarea>
-          </div>
-          <div class="tab-pane fade" role="tabpanel" aria-labelledby="style-tab" id="style">
-            <textarea class="form-control" rows="10" name="style">{{style}}</textarea>
+    <div class="editor-workspace">
+      <section class="editor-panel markdown-panel" aria-labelledby="markdown-heading">
+        <div class="panel-heading">
+          <h1 id="markdown-heading"><span class="panel-dot"></span> Markdown</h1>
+          <span class="panel-hint">Write your story</span>
+        </div>
+        <label class="visually-hidden" for="resume-markdown">Resume Markdown</label>
+        <textarea id="resume-markdown" name="content">{{content}}</textarea>
+      </section>
+
+      <section class="editor-panel preview-panel" aria-labelledby="preview-heading">
+        <div class="panel-heading">
+          <h2 id="preview-heading"><span class="panel-dot preview-dot"></span> Live preview</h2>
+          <span id="paper-label" class="paper-label">A4</span>
+        </div>
+        <div id="preview-stage" class="preview-stage">
+          <div id="preview-sheet" class="preview-sheet">
+            <iframe id="preview" title="Resume preview" sandbox="allow-same-origin allow-modals"></iframe>
           </div>
         </div>
-      </div>
-      <div>
-          <div style="height: 41px;"></div>
+        <p class="preview-note">Preview fits your screen. PDF uses the selected paper size.</p>
+      </section>
 
-        <iframe id="preview" class="a4 border rounded bg-white"></iframe>
-      </div>
+      <aside class="editor-panel appearance-panel" aria-labelledby="appearance-heading">
+        <div class="panel-heading"><h2 id="appearance-heading"><i class="bi bi-sliders" aria-hidden="true"></i> Appearance</h2></div>
+        <div class="appearance-scroll">
+          <fieldset class="style-section">
+            <legend>Quick styles</legend>
+            <div id="style-presets" class="style-presets"></div>
+          </fieldset>
+          <div id="style-controls"></div>
+          <div class="style-section style-reset">
+            <button type="button" id="reset-style" class="reset-style">Reset visual adjustments</button>
+            <span id="style-status" class="visually-hidden" role="status" aria-live="polite"></span>
+          </div>
+          <details id="advanced-css" class="style-section advanced-css">
+            <summary>Advanced CSS</summary>
+            <p>For extra customization. Your existing CSS is kept when you use the controls above.</p>
+            <label class="visually-hidden" for="resume-css">Resume CSS</label>
+            <textarea id="resume-css" name="style">{{style}}</textarea>
+          </details>
+        </div>
+      </aside>
     </div>
-
-    <div class="mt-5 text-center">
-      <button type="submit" class="btn btn-yellow">Save</button>
-      <a class="btn btn-outline-yellow" href="{{url_for('resume.get_resumes')}}">Back</a>
-      <button type="button" class="btn btn-yellow" onclick="downloadPdf()"><i class="bi bi-download"></i> PDF</button>
-    </div>
-
   </form>
 </main>
 
 {% include 'global/footer.html' %}
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
-
-<script type="application/javascript">
-    initFormSubmits();
-    const contentEl = document.querySelector('textarea[name="content"]');
-    const styleEl = document.querySelector('textarea[name="style"]');
-    const nameTextEl = document.getElementById('name-text');
-    const nameInputEl = document.getElementById('name-input');
-    const outputEl = document.getElementById('output');
-    const previewEl = document.getElementById('preview');
-
-    const contentEditor = CodeMirror.fromTextArea(contentEl, {
-        lineNumbers: false,
-        mode: "markdown",
-        theme: 'default',
-        viewportMargin: Infinity,
-        lineWrapping: true,
-        inputStyle: 'contenteditable',
-        spellcheck: true,
-    });
-
-    const styleEditor = CodeMirror.fromTextArea(styleEl, {
-        lineNumbers: false,
-        mode: "css",
-        theme: 'default',
-        viewportMargin: Infinity,
-        lineWrapping: true,
-        inputStyle: 'contenteditable',
-        spellcheck: true,
-    });
-
-    contentEditor.setSize("100%", '297mm');
-    styleEditor.setSize("100%", '297mm');
-
-    contentEditor.on('change', (editor) => {
-        contentEl.value = editor.getValue();
-        render();
-    });
-
-    styleEditor.on('change', (editor) => {
-        styleEl.value = editor.getValue();
-        render();
-    });
-
-    var render = function () {
-        const content = contentEditor.getValue();
-        const style = styleEditor.getValue();
-        const html = marked.parse(content);
-        renderFullHtml(previewEl, "", html, style);
-    };
-
-    render();
-</script>
+<script type="module" src="{{url_for('static', filename='js/editor.js')}}"></script>
 </body>
 </html>

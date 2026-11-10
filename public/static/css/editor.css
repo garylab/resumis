@@ -1,0 +1,72 @@
+.resume-editor-page { background: #f4f5f7 !important; height: auto; min-height: 100vh; }
+.editor-main { padding: 0 24px 24px; }
+.editor-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 0; }
+.editor-title { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.editor-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .15em; color: #828692; }
+.resume-name { border: 0; padding: 0; background: none; text-align: left; color: #252641; font-size: 19px; font-weight: 600; overflow-wrap: anywhere; }
+.resume-name i { margin-left: 6px; font-size: 12px; color: #9397a1; }
+.editor-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.editor-actions .btn { white-space: nowrap; }
+.editor-workspace { display: grid; grid-template-columns: minmax(240px, .9fr) minmax(320px, 1.4fr) 290px; gap: 16px; align-items: start; }
+.editor-panel { position: relative; min-width: 0; border: 1px solid #e0e3e8; border-radius: 12px; background: #fff; overflow: hidden; }
+.panel-heading { height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid #e9ebef; }
+.panel-heading h1, .panel-heading h2 { font-size: 12px; font-weight: 650; margin: 0; display: flex; align-items: center; gap: 8px; color: #45485d; }
+.panel-dot { width: 7px; height: 7px; border-radius: 50%; background: #f2a33a; display: inline-block; }
+.preview-dot { background: #51a995; }
+.panel-hint, .paper-label { font-size: 10px; color: #8a8e9b; }
+.paper-label { border: 1px solid #e2e5eb; padding: 2px 7px; border-radius: 4px; color: #606575; }
+.markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 15px 4px 15px 12px; line-height: 1.65; height: calc(100vh - 235px); min-height: 480px; }
+.preview-stage { background: #e9ecf0; padding: 24px; overflow: auto; height: calc(100vh - 264px); min-height: 450px; }
+.preview-sheet { margin: 0 auto; background: white; box-shadow: 0 3px 16px #242c3c18; }
+#preview { display: block; border: 0; background: white; transform-origin: top left; width: 210mm; height: 297mm; }
+.preview-note { margin: 0; padding: 8px 12px; font-size: 10px; color: #858a96; text-align: center; }
+.appearance-scroll { max-height: calc(100vh - 235px); min-height: 480px; overflow-y: auto; scrollbar-width: thin; }
+.style-section { min-width: 0; margin: 0; padding: 16px; border: 0; border-bottom: 1px solid #eceef2; }
+.style-section legend { float: left; width: 100%; margin: 0 0 12px; font-size: 12px; font-weight: 650; color: #35394f; }
+.style-section legend + div { clear: both; }
+.style-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.style-presets button { border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 8px 2px; font-size: 11px; }
+.style-presets button:hover, .style-presets button:focus-visible { background: #fff8ed; border-color: #f4ba6d; }
+.style-presets button[aria-pressed="true"] { background: #fff5e7; color: #925b12; border-color: #f4ba6d; }
+.style-field + .style-field { margin-top: 14px; }
+.style-field label { display: block; font-size: 11px; color: #687085; margin-bottom: 6px; }
+.style-label-row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.style-field output { font-size: 11px; color: #565e72; font-variant-numeric: tabular-nums; }
+.style-field select { width: 100%; font-size: 12px; padding: 8px 28px 8px 9px; border: 1px solid #e0e4eb; border-radius: 6px; background-color: #f9fafc; color: #35394f; }
+.style-field input[type="range"] { appearance: none; width: 100%; height: 18px; background: transparent; cursor: pointer; display: block; }
+.style-field input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: #e2e6ec; }
+.style-field input[type="range"]::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; margin-top: -4px; border-radius: 50%; background: #c87810; }
+.style-field input[type="range"]::-moz-range-track { height: 4px; border-radius: 4px; background: #e2e6ec; }
+.style-field input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: #c87810; }
+.style-color { display: flex; align-items: center; gap: 9px; }
+.style-field input[type="color"] { width: 30px; height: 28px; padding: 2px; border: 1px solid #e0e4eb; border-radius: 5px; cursor: pointer; background: white; }
+.color-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.color-fields .style-field { margin: 0; }
+.reset-style { border: none; background: none; color: #687085; font-size: 11px; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+.advanced-css { border-bottom: 0; }
+.advanced-css summary { font-size: 12px; color: #596175; cursor: pointer; }
+.advanced-css p { font-size: 11px; color: #858b99; line-height: 1.5; margin: 10px 0; }
+.advanced-css .CodeMirror { padding: 4px; font-size: 11px; height: 260px; border: 1px solid #e0e3e8 !important; }
+.advanced-css .CodeMirror-line { font-size: 11px; }
+.editor-title #name-input { min-width: 0; width: 100%; padding: 0; font-size: 19px; }
+@media (min-width: 1700px) { .editor-main { max-width: 1800px; width: 100%; margin: 0 auto; } }
+@media (max-width: 1150px) {
+  .editor-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+  .appearance-panel { grid-column: 1 / -1; }
+  .appearance-scroll { display: grid; grid-template-columns: 1fr 2fr; max-height: none; min-height: 0; }
+  #style-controls { grid-row: span 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .style-section { border-right: 1px solid #eceef2; }
+}
+@media (max-width: 650px) {
+  .editor-main { padding: 0 12px 16px; }
+  .editor-toolbar { flex-wrap: wrap; gap: 12px; padding: 16px 0; }
+  .editor-title { width: 100%; }
+  .editor-actions { width: 100%; justify-content: flex-end; }
+  .editor-workspace { grid-template-columns: minmax(0, 1fr); }
+  .appearance-panel { grid-column: auto; }
+  .appearance-scroll { display: block; }
+  #style-controls { display: block; }
+  .markdown-panel .CodeMirror { height: 330px; min-height: 0; }
+  .preview-stage { height: 550px; min-height: 0; padding: 16px; }
+  .style-section { border-right: 0; }
+}

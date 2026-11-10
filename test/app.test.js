@@ -54,8 +54,8 @@ test('all public routes, SEO, templates, and Markdown/CSS defaults match the sou
     assert.equal(editor.status, 200);
     const editorHtml = await editor.text();
     assert.ok(editorHtml.includes(name));
-    assert.match(editorHtml, /CodeMirror.fromTextArea/);
-    assert.match(editorHtml, /downloadPdf\(\)/);
+    assert.match(editorHtml, /src="\/static\/js\/editor.js"/);
+    assert.match(editorHtml, /id="export-pdf"/);
     assert.ok(css.length > 100);
     assert.equal(resume.content, await readFile(new URL(`../data/resumes/${name}.md`, import.meta.url), 'utf8'));
   }

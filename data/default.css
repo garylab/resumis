@@ -6,27 +6,36 @@
     --global-font-family: 'Times New Roman', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif';
     --underline-color: #eee;
     --page-margin: 9mm;
+    --page-margin-x: var(--page-margin);
+    --page-margin-y: var(--page-margin);
+    --page-size: A4;
+    --body-color: #333333;
+    --line-height: 1.75;
+    --heading-scale: 1;
+    --section-spacing: 17pt;
+    --list-columns: 2;
+    --heading-align: center;
 }
 
 html, body {
     margin:0;
     padding:0;
     font-size: var(--global-font-size)!important;
-    color: #333;
+    color: var(--body-color, #333333);
     font-weight: 400;
     font-family: var(--global-font-family)!important;
     background-color: white;
 }
 
 body {
-    padding: var(--page-margin);
+    padding: var(--page-margin-y) var(--page-margin-x);
 }
 
 @media print {
     @page
     {
-        size: A4;
-        margin: var(--page-margin);
+        size: var(--page-size);
+        margin: var(--page-margin-y) var(--page-margin-x);
     }
     body {
         padding: 0;
@@ -46,9 +55,9 @@ b, strong {font-weight: 700}
 p, blockquote {margin: 0;}
 
 h1 {
-    font-size: 20pt;
+    font-size: calc(20pt * var(--heading-scale, 1));
     font-weight: 600;
-    text-align: center;
+    text-align: var(--heading-align, center);
     margin: 0 0 7pt!important;
 }
 
@@ -71,19 +80,19 @@ h1 + p a {
 }
 
 h1 + p {
-    text-align: center;
+    text-align: var(--heading-align, center);
     line-height: 1;
 }
 
 h2 {
-    font-size: 13pt;
+    font-size: calc(13pt * var(--heading-scale, 1));
     font-weight: 600;
     border-bottom: 1px solid var(--underline-color);
-    margin: 17pt 0 1pt!important;
+    margin: var(--section-spacing, 17pt) 0 1pt!important;
 }
 
 h3, h4, h5, h6 {
-    font-size: var(--global-font-size);
+    font-size: calc(var(--global-font-size) * var(--heading-scale, 1));
     font-weight: 600;
 }
 
@@ -98,7 +107,7 @@ h3 + blockquote p {
 }
 
 p, ul li, ol li {
-    line-height: 1.75;
+    line-height: var(--line-height, 1.75);
 }
 
 /* List */
@@ -117,7 +126,5 @@ ul, ol {
 }
 
 ul {
-    columns: 2;
-    -webkit-columns: 2;
-    -moz-columns: 2;
+    columns: var(--list-columns, 2);
 }

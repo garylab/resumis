@@ -106,7 +106,7 @@ export function createApp(fetcher = (...args) => fetch(...args)) {
           if (createMatch && !resume) return text(`Template ${fromSlug(createMatch[1])} not found`, 404);
           const name = resume?.name || 'Untitled Resume';
           return page('resume.html', {
-            old_name: '', name, content: resume?.content || '', style: resume ? css : '',
+            old_name: '', name, content: resume?.content || '', style: css,
             seo: resume ? seo(`Create a ${name} Markdown Resume from Template Online`,
               `${name} resume, markdown resume, resume builder, Github`,
               `Create a ${name} Markdown resume with ${siteName(env)}. Easily build and customize resume and save it to your own Github repository.`,

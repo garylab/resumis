@@ -71,7 +71,9 @@ Start sign-in from that same origin. The editor and PDF export work without sign
 
 ## Features
 
-- Eight resume templates, Markdown/CSS editing, and live preview.
+- Eight resume templates, Markdown editing, and live preview.
+- Visual appearance controls for fonts, sizes, line height, margins, colors, heading alignment, list columns, and A4/US Letter paper. Choose Classic, Modern, or Compact presets, or adjust individual controls. Advanced CSS is available for extra customization.
+- Appearance changes are saved as CSS variables in the same `style.css` file as your resume, and apply to preview and PDF export. Existing custom CSS is preserved; **Reset visual adjustments** removes only changes made by the visual controls.
 - PDF export through the browser’s **Save as PDF** option.
 - GitHub sign-in, repository/branch selection, and resume creation, editing, renaming, duplication, and deletion.
 - The last saved repository and branch are remembered in this browser for 31 days, including after logout or browser restart. On sign-in with the same GitHub account, the app restores them if the branch is still accessible. The encrypted preference cookie contains no GitHub token; clearing site cookies forgets the selection.
@@ -118,6 +120,6 @@ Edit `templates/` for pages, `public/static/` for assets, and `data/resumes/` fo
 npm run build
 ```
 
-The optional `npm run test:parity` check requires the parent Python project and `uv`. It compares 21 rendered pages against the original templates, excluding the customized footer and configurable analytics; it is not used for Markdown conversion, builds, or deployment.
+The optional `npm run test:parity` check requires the parent Python project and `uv`. It compares 12 rendered pages against the original templates, excluding the redesigned editor, customized footer, and configurable analytics; it is not used for Markdown conversion, builds, or deployment.
 
 </details>

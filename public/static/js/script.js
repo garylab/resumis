@@ -1,20 +1,3 @@
-const renderFullHtml = (previewEl, title, html, style) => {
-    var iframeDocument = previewEl.contentDocument || previewEl.contentWindow.document;
-    iframeDocument.open();
-    iframeDocument.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <title>${title}</title>
-            <style>${style}</style>
-        </head>
-        <body>
-            ${html}
-        </body>
-        </html>`);
-    iframeDocument.close()
-}
-
 /**
  * Tooltips
  */
@@ -96,57 +79,6 @@ function submitForm(formEl) {
 function initFormSubmits() {
     var formElList = document.querySelectorAll('form');
     return [...formElList].map(formEl => submitForm(formEl));
-}
-
-/**
- * PDF
- */
-function downloadPdf() {
-    const title = nameTextEl.textContent;
-    const content = contentEditor.getValue();
-    const html = marked.parse(content);
-    const style = styleEditor.getValue();
-
-    renderFullHtml(previewEl, title, html, style);
-
-    if (previewEl.contentWindow) {
-        previewEl.contentWindow.print();
-    } else {
-        // For older browsers, use a try-catch block
-        try {
-            previewEl.contentDocument.execCommand('print', false, null);
-        } catch (e) {
-            window.print();
-        }
-    }
-}
-
-/*Name input*/
-function enableEditing() {
-    nameInputEl.value = nameTextEl.textContent;
-    nameTextEl.classList.add('d-none');
-    nameInputEl.classList.remove('d-none');
-    nameInputEl.focus();
-}
-
-function saveEditing() {
-    nameTextEl.textContent = nameInputEl.value;
-    nameInputEl.classList.add('d-none');
-    nameTextEl.classList.remove('d-none');
-}
-
-function adjustInputWidth(input) {
-    const span = document.createElement('span');
-    span.style.visibility = 'hidden';
-    span.style.position = 'absolute';
-    span.style.whiteSpace = 'pre';
-    span.textContent = input.value || input.placeholder;
-
-    document.body.appendChild(span);
-    const width = Math.max(200, span.offsetWidth + 2) + 24; // minimal width is 200px + padding
-    console.log(width);
-    input.style.width = `${width}px`;
-    document.body.removeChild(span);
 }
 
 /**
