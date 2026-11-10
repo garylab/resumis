@@ -2,5 +2,6 @@
 # These two secrets are required for GitHub sign-in and saving resumes.
 GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
 SESSION_SECRET=replace-with-a-random-secret-of-at-least-32-characters
-# Public settings are in wrangler.jsonc under vars.
-# For local overrides, add public settings to your untracked .dev.vars file.
+# Configure production public settings in the Cloudflare dashboard.
+# For local development, add GITHUB_CLIENT_ID and any optional public settings
+# to your untracked .dev.vars file (see README.md).

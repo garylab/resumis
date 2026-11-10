@@ -27,7 +27,11 @@ npm ci
 cp -n .dev.vars.example .dev.vars
 ```
 
-Configure secrets in `.dev.vars` and public settings in `wrangler.jsonc` under `vars`. For local development, you can also override public settings in your untracked `.dev.vars` file.
+For local development, configure secrets and public settings in your untracked `.dev.vars` file. After copying the example, add your OAuth client ID:
+
+```dotenv
+GITHUB_CLIENT_ID=your-github-oauth-client-id
+```
 
 | Variable | Type | Value |
 | --- | --- | --- |
@@ -48,7 +52,7 @@ PRIVACY_POLICY_CONTENT="# Privacy Policy\n\nYour privacy policy."
 FOOTER_CONTENT="[Privacy](/privacy-policy) · [Terms](/terms-of-service)"
 ```
 
-On Cloudflare, these public settings are plaintext Worker variables. Optional settings are commented examples in `wrangler.jsonc`, so they are omitted from deployment prompts and the app uses its defaults. Add only the ones you need under your Worker's **Settings → Variables and Secrets** as **Text**, or under `vars` in your deployed repository's `wrangler.jsonc`. `keep_vars: true` preserves dashboard variables that are not declared in `vars`; explicitly declared values still take precedence on deployment. See [Wrangler's configuration documentation](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth).
+On Cloudflare, manage public settings under your Worker's **Settings → Variables and Secrets** as **Text**. Add `GITHUB_CLIENT_ID` for sign-in and only the optional settings you need; omitted settings use the app's defaults. `wrangler.jsonc` deliberately has no `vars` declarations and enables `keep_vars: true` so redeployments preserve existing dashboard values. Keep variables out of Wrangler configuration, including any `wrangler.toml` in your deployment repository, because explicitly declared values override dashboard settings. See [Wrangler's configuration documentation](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth).
 
 `.dev.vars.example` lists only the two secrets needed for sign-in. The editor and PDF export work without any credentials; the deployment button prompts for credentials to enable GitHub saving.
 
@@ -79,7 +83,7 @@ Existing GitHub resumes work unchanged. Sign in again when switching from Flask.
 
 Use the **Deploy to Cloudflare** button above, then configure `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and a random `SESSION_SECRET` for your Worker. See [Cloudflare's deploy button documentation](https://developers.cloudflare.com/workers/platform/deploy-buttons/) for the setup flow.
 
-For manual deployment, set `GITHUB_CLIENT_ID` and any other public settings in `wrangler.jsonc` under `vars`, then authenticate and configure the two production secrets from the repository root:
+For manual deployment, authenticate and configure the two production secrets from the repository root:
 
 ```sh
 npx wrangler login
@@ -88,11 +92,11 @@ npx wrangler secret put SESSION_SECRET
 npm run deploy
 ```
 
-Wrangler may offer to create the Worker when setting the first secret. Register the production OAuth callback as `https://<your-host>/auth/callback`.
+Wrangler may offer to create the Worker when setting the first secret. Once the Worker exists, add `GITHUB_CLIENT_ID` and any optional public settings in its **Settings → Variables and Secrets** as **Text**, then save/deploy those settings. Register the production OAuth callback as `https://<your-host>/auth/callback`.
 
 For Cloudflare Git builds, use the **repository root** and deploy command **`npm run deploy`**. Attach a custom domain in Cloudflare if needed.
 
-If you deployed an earlier version that classified all settings as secrets, save your public setting values, remove their secret entries under your Worker's **Settings → Variables and Secrets**, and put those values in your deployed repository's `wrangler.jsonc` under `vars` before redeploying. Keep `GITHUB_CLIENT_SECRET` and `SESSION_SECRET` as secrets. Updating this template does not automatically reclassify an existing Worker's bindings.
+If you deployed an earlier version that classified all settings as secrets, save your public setting values and replace their secret entries with **Text** entries under your Worker's **Settings → Variables and Secrets**. Keep `GITHUB_CLIENT_SECRET` and `SESSION_SECRET` as secrets. Also remove any `vars` declarations from your deployment repository's Wrangler configuration and retain `keep_vars: true`. Updating this template does not automatically reclassify an existing Worker's bindings or recover values that were already overwritten.
 
 ## Development
 

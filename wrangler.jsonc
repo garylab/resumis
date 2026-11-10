@@ -4,18 +4,8 @@
   "main": "src/index.js",
   "compatibility_date": "2026-11-10",
   "workers_dev": true,
-  // Preserve optional variables added through the Cloudflare dashboard.
+  // Manage environment variables in Cloudflare; preserve them on redeploy.
   "keep_vars": true,
-  "vars": {
-    "GITHUB_CLIENT_ID": "",
-    // Optional: uncomment only the settings you want to override.
-    // "PUBLIC_ORIGIN": "https://dev.resumis.com",
-    // "SITE_NAME": "Resumis",
-    // "GA_MEASUREMENT_ID": "G-XXXXXXXXXX",
-    // "PRIVACY_POLICY_CONTENT": "# Privacy Policy\n\nYour privacy policy.",
-    // "TERMS_OF_SERVICE_CONTENT": "# Terms of Service\n\nYour terms.",
-    // "FOOTER_CONTENT": "[Privacy](/privacy-policy) · [Terms](/terms-of-service)",
-  },
   "dev": {
     "ip": "0.0.0.0",
     "port": 8988,
