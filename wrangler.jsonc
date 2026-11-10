@@ -4,14 +4,17 @@
   "main": "src/index.js",
   "compatibility_date": "2026-11-10",
   "workers_dev": true,
+  // Preserve optional variables added through the Cloudflare dashboard.
+  "keep_vars": true,
   "vars": {
     "GITHUB_CLIENT_ID": "",
-    "PUBLIC_ORIGIN": "",
-    "SITE_NAME": "Resumis",
-    "GA_MEASUREMENT_ID": "",
-    "PRIVACY_POLICY_CONTENT": "",
-    "TERMS_OF_SERVICE_CONTENT": "",
-    "FOOTER_CONTENT": ""
+    // Optional: uncomment only the settings you want to override.
+    // "PUBLIC_ORIGIN": "https://dev.resumis.com",
+    // "SITE_NAME": "Resumis",
+    // "GA_MEASUREMENT_ID": "G-XXXXXXXXXX",
+    // "PRIVACY_POLICY_CONTENT": "# Privacy Policy\n\nYour privacy policy.",
+    // "TERMS_OF_SERVICE_CONTENT": "# Terms of Service\n\nYour terms.",
+    // "FOOTER_CONTENT": "[Privacy](/privacy-policy) · [Terms](/terms-of-service)",
   },
   "dev": {
     "ip": "0.0.0.0",

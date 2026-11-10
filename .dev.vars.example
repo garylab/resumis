@@ -1,4 +1,5 @@
 # Only secrets belong in this example: Cloudflare uses it to discover secret bindings.
+# These two secrets are required for GitHub sign-in and saving resumes.
 GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
 SESSION_SECRET=replace-with-a-random-secret-of-at-least-32-characters
 # Public settings are in wrangler.jsonc under vars.

@@ -31,14 +31,14 @@ Configure secrets in `.dev.vars` and public settings in `wrangler.jsonc` under `
 
 | Variable | Type | Value |
 | --- | --- | --- |
-| `GITHUB_CLIENT_ID` | Plaintext | GitHub OAuth app client ID |
-| `GITHUB_CLIENT_SECRET` | Secret | GitHub OAuth app client secret |
-| `SESSION_SECRET` | Secret | Random secret: generate with `openssl rand -hex 32` |
+| `GITHUB_CLIENT_ID` | Plaintext | Required for sign-in: GitHub OAuth app client ID |
+| `GITHUB_CLIENT_SECRET` | Secret | Required for sign-in: GitHub OAuth app client secret |
+| `SESSION_SECRET` | Secret | Required for sign-in: random secret, generate with `openssl rand -hex 32` |
 | `PUBLIC_ORIGIN` | Plaintext | Optional HTTPS proxy origin, e.g. `https://dev.resumis.com` |
-| `SITE_NAME` | Plaintext | Site title and branding; default `Resumis` |
+| `SITE_NAME` | Plaintext | Optional site title and branding; default `Resumis` |
 | `GA_MEASUREMENT_ID` | Plaintext | Optional Google Analytics measurement ID, e.g. `G-XXXXXXXXXX`; unset, empty, or invalid disables analytics |
-| `PRIVACY_POLICY_CONTENT` | Plaintext | Markdown for `/privacy-policy`; empty keeps the original page |
-| `TERMS_OF_SERVICE_CONTENT` | Plaintext | Markdown for `/terms-of-service`; empty keeps the original page |
+| `PRIVACY_POLICY_CONTENT` | Plaintext | Optional Markdown for `/privacy-policy`; unset or empty keeps the original page |
+| `TERMS_OF_SERVICE_CONTENT` | Plaintext | Optional Markdown for `/terms-of-service`; unset or empty keeps the original page |
 | `FOOTER_CONTENT` | Plaintext | Optional Markdown appended to the footer |
 
 Footer: `{SITE_NAME} Powered by Resumis {FOOTER_CONTENT}`, with **SITE_NAME** linking to the current site's homepage and **Powered by Resumis** linking to https://resumis.com. Markdown supports headings, lists, and links; raw HTML is escaped. Use double-quoted `\n` for newlines in `.dev.vars`, for example:
@@ -48,7 +48,9 @@ PRIVACY_POLICY_CONTENT="# Privacy Policy\n\nYour privacy policy."
 FOOTER_CONTENT="[Privacy](/privacy-policy) · [Terms](/terms-of-service)"
 ```
 
-On Cloudflare, these public settings are plaintext Worker variables. Keep production values in your deployed repository's `wrangler.jsonc` under `vars`, since deployments apply those values. `.dev.vars.example` lists only the two secrets so the Deploy to Cloudflare flow classifies them correctly.
+On Cloudflare, these public settings are plaintext Worker variables. Optional settings are commented examples in `wrangler.jsonc`, so they are omitted from deployment prompts and the app uses its defaults. Add only the ones you need under your Worker's **Settings → Variables and Secrets** as **Text**, or under `vars` in your deployed repository's `wrangler.jsonc`. `keep_vars: true` preserves dashboard variables that are not declared in `vars`; explicitly declared values still take precedence on deployment. See [Wrangler's configuration documentation](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth).
+
+`.dev.vars.example` lists only the two secrets needed for sign-in. The editor and PDF export work without any credentials; the deployment button prompts for credentials to enable GitHub saving.
 
 ```sh
 npm run dev
