@@ -14,10 +14,8 @@
   <link rel="stylesheet" href="{{url_for('static', filename='css/editor.css')}}">
 </head>
 <body class="bg-light resume-editor-page">
-{% include 'global/navbar.html' %}
-
-<main class="content editor-main">
-  <form id="saveResume" action="{{url_for('resume.save')}}" method="post">
+<main class="editor-main">
+  <form id="saveResume" class="editor-form" action="{{url_for('resume.save')}}" method="post">
     <input type="hidden" name="oldName" value="{{old_name}}">
     <div class="editor-toolbar">
       <div class="editor-title">
@@ -80,7 +78,7 @@
   </form>
 </main>
 
-{% include 'global/footer.html' %}
+{% include 'global/scripts.html' %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>

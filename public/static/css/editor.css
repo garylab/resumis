@@ -1,26 +1,27 @@
-.resume-editor-page { background: #f4f5f7 !important; height: auto; min-height: 100vh; }
-.editor-main { padding: 0 24px 24px; }
-.editor-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 0; }
+.resume-editor-page { background: #f4f5f7 !important; height: 100%; min-height: 100%; overflow: hidden; }
+.editor-main { flex: 1; min-height: 0; padding: 0 20px 20px; display: flex; flex-direction: column; }
+.editor-form { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.editor-toolbar { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 14px 0; }
 .editor-title { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .editor-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .15em; color: #828692; }
 .resume-name { border: 0; padding: 0; background: none; text-align: left; color: #252641; font-size: 19px; font-weight: 600; overflow-wrap: anywhere; }
 .resume-name i { margin-left: 6px; font-size: 12px; color: #9397a1; }
 .editor-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .editor-actions .btn { white-space: nowrap; }
-.editor-workspace { display: grid; grid-template-columns: minmax(240px, .9fr) minmax(320px, 1.4fr) 290px; gap: 16px; align-items: start; }
-.editor-panel { position: relative; min-width: 0; border: 1px solid #e0e3e8; border-radius: 12px; background: #fff; overflow: hidden; }
-.panel-heading { height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid #e9ebef; }
+.editor-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(240px, .9fr) minmax(320px, 1.4fr) 290px; grid-template-rows: minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.editor-panel { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; border: 1px solid #e0e3e8; border-radius: 12px; background: #fff; overflow: hidden; }
+.panel-heading { flex-shrink: 0; height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid #e9ebef; }
 .panel-heading h1, .panel-heading h2 { font-size: 12px; font-weight: 650; margin: 0; display: flex; align-items: center; gap: 8px; color: #45485d; }
 .panel-dot { width: 7px; height: 7px; border-radius: 50%; background: #f2a33a; display: inline-block; }
 .preview-dot { background: #51a995; }
 .panel-hint, .paper-label { font-size: 10px; color: #8a8e9b; }
 .paper-label { border: 1px solid #e2e5eb; padding: 2px 7px; border-radius: 4px; color: #606575; }
-.markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 15px 4px 15px 12px; line-height: 1.65; height: calc(100vh - 235px); min-height: 480px; }
-.preview-stage { background: #e9ecf0; padding: 24px; overflow: auto; height: calc(100vh - 264px); min-height: 450px; }
+.markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 15px 4px 15px 12px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
+.preview-stage { background: #e9ecf0; padding: 24px; overflow: auto; flex: 1; min-height: 0; }
 .preview-sheet { margin: 0 auto; background: white; box-shadow: 0 3px 16px #242c3c18; }
 #preview { display: block; border: 0; background: white; transform-origin: top left; width: 210mm; height: 297mm; }
-.preview-note { margin: 0; padding: 8px 12px; font-size: 10px; color: #858a96; text-align: center; }
-.appearance-scroll { max-height: calc(100vh - 235px); min-height: 480px; overflow-y: auto; scrollbar-width: thin; }
+.preview-note { flex-shrink: 0; margin: 0; padding: 8px 12px; font-size: 10px; color: #858a96; text-align: center; }
+.appearance-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .style-section { min-width: 0; margin: 0; padding: 16px; border: 0; border-bottom: 1px solid #eceef2; }
 .style-section legend { float: left; width: 100%; margin: 0 0 12px; font-size: 12px; font-weight: 650; color: #35394f; }
 .style-section legend + div { clear: both; }
@@ -49,11 +50,14 @@
 .advanced-css .CodeMirror { padding: 4px; font-size: 11px; height: 260px; border: 1px solid #e0e3e8 !important; }
 .advanced-css .CodeMirror-line { font-size: 11px; }
 .editor-title #name-input { min-width: 0; width: 100%; padding: 0; font-size: 19px; }
-@media (min-width: 1700px) { .editor-main { max-width: 1800px; width: 100%; margin: 0 auto; } }
+/* Stacked panels no longer fit one screen, so narrow layouts scroll the page. */
 @media (max-width: 1150px) {
-  .editor-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+  .resume-editor-page { height: auto; min-height: 100vh; overflow: visible; }
+  .editor-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); grid-template-rows: none; align-items: start; }
+  .markdown-panel .CodeMirror { flex: none; height: calc(100vh - 205px); min-height: 480px; }
+  .preview-stage { flex: none; height: calc(100vh - 234px); min-height: 450px; }
   .appearance-panel { grid-column: 1 / -1; }
-  .appearance-scroll { display: grid; grid-template-columns: 1fr 2fr; max-height: none; min-height: 0; }
+  .appearance-scroll { display: grid; grid-template-columns: 1fr 2fr; min-height: 0; overflow: visible; }
   #style-controls { grid-row: span 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .style-section { border-right: 1px solid #eceef2; }
 }
@@ -66,7 +70,7 @@
   .appearance-panel { grid-column: auto; }
   .appearance-scroll { display: block; }
   #style-controls { display: block; }
-  .markdown-panel .CodeMirror { height: 330px; min-height: 0; }
-  .preview-stage { height: 550px; min-height: 0; padding: 16px; }
+  .markdown-panel .CodeMirror { flex: none; height: 330px; min-height: 0; }
+  .preview-stage { flex: none; height: 550px; min-height: 0; padding: 16px; }
   .style-section { border-right: 0; }
 }

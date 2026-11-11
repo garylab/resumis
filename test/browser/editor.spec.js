@@ -118,6 +118,28 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   expect(errors).toEqual([]);
 });
 
+test('the editor fills the screen without the site navbar or footer', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/create/project-manager');
+  await expect(page.locator('nav.navbar')).toHaveCount(0);
+  await expect(page.locator('footer')).toHaveCount(0);
+  const box = await page.locator('.editor-workspace').boundingBox();
+  expect(box.width).toBeGreaterThan(1380); // Full width, minus the page gutters.
+  expect(box.y + box.height).toBeGreaterThan(860); // Reaches the bottom of the viewport.
+  // The page itself never scrolls; the Markdown, preview, and appearance panels do.
+  expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
+  const editor = await page.locator('.markdown-panel .CodeMirror').boundingBox();
+  const panel = await page.locator('.markdown-panel').boundingBox();
+  expect(editor.y + editor.height).toBeLessThanOrEqual(panel.y + panel.height + 1);
+  expect(editor.height).toBeGreaterThan(600);
+  await page.evaluate(() => document.querySelector('.markdown-panel .CodeMirror').CodeMirror.setValue('# Tall\n\n' + 'line\n\n'.repeat(200)));
+  expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
+  expect(await page.evaluate(() => {
+    const scroller = document.querySelector('.CodeMirror-scroll');
+    return scroller.scrollHeight > scroller.clientHeight;
+  })).toBe(true);
+});
+
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/create');
