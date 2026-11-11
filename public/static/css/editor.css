@@ -15,7 +15,7 @@
 .editor-panel { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
 .preview-panel, .appearance-panel { border-left: 1px solid #e0e3e8; }
 .markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 15px 4px 15px 12px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
-.preview-stage { background: #e9ecf0; padding: 24px; overflow: auto; flex: 1; min-height: 0; }
+.preview-stage { background: #e9ecf0; padding: 14px 6px; overflow: auto; flex: 1; min-height: 0; }
 .preview-sheet { margin: 0 auto; background: white; box-shadow: 0 3px 16px #242c3c18; }
 #preview { display: block; border: 0; background: white; transform-origin: top left; width: 210mm; height: 297mm; }
 .appearance-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
@@ -70,6 +70,6 @@
   .appearance-scroll { display: block; }
   #style-controls { display: block; }
   .markdown-panel .CodeMirror { flex: none; height: 300px; min-height: 0; }
-  .preview-stage { flex: none; height: 430px; min-height: 0; padding: 16px; }
+  .preview-stage { flex: none; height: 430px; min-height: 0; padding: 12px 6px; }
   .style-section { border-right: 0; }
 }
