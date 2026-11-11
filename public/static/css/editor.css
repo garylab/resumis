@@ -12,13 +12,14 @@
 .resume-name i { margin-left: 6px; font-size: 12px; color: #9397a1; }
 .editor-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .editor-actions .btn { padding-left: 1rem; padding-right: 1rem; white-space: nowrap; }
-.editor-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(240px, .9fr) minmax(320px, 1.4fr) 320px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.editor-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(280px, 1.1fr) minmax(320px, 1.4fr) 320px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
 .editor-panel { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
 .editor-panel { border-left: 1px solid #e0e3e8; }
 .appearance-panel { border-right: 1px solid #e0e3e8; }
-.markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 15px 4px 15px 12px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
+.markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 24px 10px 24px 14px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
 .preview-stage { background: #e9ecf0; padding: 14px 6px; overflow: auto; flex: 1; min-height: 0; }
-.preview-sheet { margin: 0 auto; background: white; box-shadow: 0 3px 16px #242c3c18; }
+.preview-sheet { position: relative; margin: 0 auto; background: white; box-shadow: 0 3px 16px #242c3c18; }
+.page-break { position: absolute; left: 0; right: 0; border-top: 1px dashed #98a0ae; pointer-events: none; }
 #preview { display: block; border: 0; background: white; transform-origin: top left; width: 210mm; height: 297mm; }
 .appearance-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .style-section { min-width: 0; margin: 0; padding: 16px; border: 0; border-bottom: 1px solid #eceef2; }

@@ -176,6 +176,23 @@ test('the right bar holds navigation, saving, and the resume name that grows as 
   await expect(page.locator('#name-text')).toHaveText('Two lines');
 });
 
+test('the preview marks where each printed page ends', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/create');
+  await expect(page.locator('.CodeMirror')).toHaveCount(2, { timeout: 30000 });
+  await expect(page.locator('.page-break')).toHaveCount(0); // A blank resume is one page.
+  await page.evaluate(() => document.querySelector('.markdown-panel .CodeMirror')
+    .CodeMirror.setValue('# Long resume\n\n' + 'Another paragraph of resume text.\n\n'.repeat(400)));
+  await expect(page.locator('.page-break').first()).toBeVisible();
+  const tops = await page.locator('.page-break').evaluateAll(marks => marks.map(mark => mark.offsetTop));
+  expect(tops.length).toBeGreaterThan(1);
+  const gaps = tops.slice(1).map((top, index) => top - tops[index]);
+  for (const gap of gaps) expect(Math.abs(gap - gaps[0])).toBeLessThan(1); // One page apart.
+  const sheet = await page.locator('#preview-sheet').boundingBox();
+  expect(Math.abs(gaps[0] - sheet.width * 297 / 210)).toBeLessThan(2); // A4 proportions.
+  expect(tops.at(-1)).toBeLessThan(sheet.height);
+});
+
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/create');

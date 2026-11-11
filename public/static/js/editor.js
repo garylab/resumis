@@ -160,7 +160,7 @@ function syncControls() {
 }
 
 function fitPreview() {
-  fitResumePreview(preview, stage, sheet, paper);
+  fitResumePreview(preview, stage, sheet, paper, true);
 }
 
 function render(contentChanged = false) {
