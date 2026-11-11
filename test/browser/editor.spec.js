@@ -127,7 +127,8 @@ test('the editor fills the screen without the site navbar, footer, or panel chro
   await expect(page.locator('.panel-heading, .preview-note')).toHaveCount(0);
   await expect(page.getByText('RESUME EDITOR')).toHaveCount(0);
   const box = await page.locator('.editor-workspace').boundingBox();
-  expect(box).toEqual({ x: 0, y: 0, width: 1440, height: 900 }); // Edge to edge.
+  // Full height, and full width apart from the gutter at each screen edge.
+  expect(box).toEqual({ x: 12, y: 0, width: 1416, height: 900 });
   // The page itself never scrolls; the Markdown, preview, and appearance panels do.
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
   const editor = await page.locator('.markdown-panel .CodeMirror').boundingBox();
@@ -155,13 +156,24 @@ test('the right bar holds navigation, saving, and the resume name that grows as 
   const panelBox = await page.locator('.appearance-panel').boundingBox();
   expect(nameBox.y).toBeGreaterThanOrEqual(barBox.y + barBox.height);
   expect(nameBox.x).toBeGreaterThanOrEqual(panelBox.x);
+  // Paper size leads the controls, under its own heading, with Quick styles next.
+  expect(await page.locator('.appearance-scroll legend').allTextContents()).toEqual(
+    ['Paper Size', 'Quick styles', 'Typography', 'Spacing', 'Layout', 'Colors']);
+  await expect(page.locator('#paper-section')).toContainText('Paper Size');
   await page.locator('#name-text').click();
+  await expect(page.locator('#name-input')).toHaveJSProperty('tagName', 'TEXTAREA');
   const short = (await page.locator('#name-input').boundingBox()).width;
   expect(short).toBeLessThan(200); // Starts out as wide as the name itself.
   await page.locator('#name-input').fill('A considerably longer resume name');
   const long = (await page.locator('#name-input').boundingBox()).width;
   expect(long).toBeGreaterThan(short + 60);
   expect(long).toBeLessThanOrEqual(panelBox.width);
+  // Wrapped text grows the field downwards instead of being clipped.
+  expect((await page.locator('#name-input').boundingBox()).height).toBeGreaterThan(30);
+  // Line breaks cannot reach a name that becomes a GitHub folder path.
+  await page.locator('#name-input').fill('Two\nlines');
+  await page.locator('#name-input').blur();
+  await expect(page.locator('#name-text')).toHaveText('Two lines');
 });
 
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {

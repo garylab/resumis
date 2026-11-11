@@ -1,5 +1,6 @@
 .resume-editor-page { background: #f4f5f7 !important; height: 100%; min-height: 100%; overflow: hidden; }
-.editor-main { flex: 1; min-height: 0; padding: 0; display: flex; flex-direction: column; }
+/* A gutter at the screen edges only; the three panels stay flush with each other. */
+.editor-main { flex: 1; min-height: 0; padding: 0 12px; display: flex; flex-direction: column; }
 .editor-form { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .editor-bar { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eceef2; }
 .icon-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex-shrink: 0; border: 1px solid #e0e4eb; border-radius: 8px; background: #fff; color: #4a4f61; font-size: 16px; }
@@ -13,7 +14,8 @@
 .editor-actions .btn { padding-left: 1rem; padding-right: 1rem; white-space: nowrap; }
 .editor-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(240px, .9fr) minmax(320px, 1.4fr) 320px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
 .editor-panel { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
-.preview-panel, .appearance-panel { border-left: 1px solid #e0e3e8; }
+.editor-panel { border-left: 1px solid #e0e3e8; }
+.appearance-panel { border-right: 1px solid #e0e3e8; }
 .markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 15px 4px 15px 12px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
 .preview-stage { background: #e9ecf0; padding: 14px 6px; overflow: auto; flex: 1; min-height: 0; }
 .preview-sheet { margin: 0 auto; background: white; box-shadow: 0 3px 16px #242c3c18; }
@@ -46,7 +48,7 @@
 .advanced-css p { font-size: 11px; color: #858b99; line-height: 1.5; margin: 10px 0; }
 .advanced-css .CodeMirror { padding: 4px; font-size: 11px; height: 260px; border: 1px solid #e0e3e8 !important; }
 .advanced-css .CodeMirror-line { font-size: 11px; }
-.editor-title #name-input { min-width: 0; max-width: 100%; padding: 0; font-size: 18px; font-weight: 600; }
+.editor-title #name-input { min-width: 0; max-width: 100%; padding: 0; font-size: 18px; font-weight: 600; line-height: 1.35; resize: none; overflow: hidden; }
 /* Stacked panels no longer fit one screen, so narrow layouts scroll the page. */
 @media (max-width: 1150px) {
   .resume-editor-page { height: auto; min-height: 100vh; overflow: visible; }
@@ -54,7 +56,7 @@
   /* Leave the save bar and name in view below the editor and preview. */
   .markdown-panel .CodeMirror { flex: none; height: calc(100vh - 150px); min-height: 420px; }
   .preview-stage { flex: none; height: calc(100vh - 150px); min-height: 420px; }
-  .markdown-panel { border-right: 1px solid #e0e3e8; }
+  .preview-panel { border-right: 1px solid #e0e3e8; }
   .appearance-panel { border-top: 1px solid #e0e3e8; }
   .appearance-panel { grid-column: 1 / -1; }
   .appearance-scroll { display: grid; grid-template-columns: 1fr 2fr; min-height: 0; overflow: visible; }
@@ -63,9 +65,8 @@
 }
 @media (max-width: 650px) {
   .editor-workspace { grid-template-columns: minmax(0, 1fr); }
-  .markdown-panel { border-right: 0; }
-  .preview-panel { border-left: 0; border-top: 1px solid #e0e3e8; }
-  .appearance-panel { border-left: 0; }
+  .editor-panel { border-right: 1px solid #e0e3e8; }
+  .preview-panel { border-top: 1px solid #e0e3e8; }
   .appearance-panel { grid-column: auto; }
   .appearance-scroll { display: block; }
   #style-controls { display: block; }

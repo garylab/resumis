@@ -43,14 +43,15 @@ for (const [name, settings] of Object.entries(PRESETS)) {
   document.getElementById('style-presets').append(button);
 }
 
-for (const group of ['Page', 'Typography', 'Spacing', 'Layout', 'Colors']) {
+for (const group of ['Paper Size', 'Typography', 'Spacing', 'Layout', 'Colors']) {
   const section = node('fieldset', 'style-section');
   section.append(node('legend', '', group));
   const fields = node('div', group === 'Colors' ? 'color-fields' : '');
   section.append(fields);
   for (const setting of SETTINGS.filter(item => item.group === group)) {
     const field = node('div', 'style-field');
-    const label = node('label', '', setting.label);
+    // The paper group holds one control, so its legend is the only label shown.
+    const label = node('label', setting.key === 'paper' ? 'visually-hidden' : '', setting.label);
     label.htmlFor = `style-${setting.key}`;
     const output = node('output');
     const input = node(setting.type === 'select' || setting.type === 'font' ? 'select' : 'input');
@@ -79,7 +80,7 @@ for (const group of ['Page', 'Typography', 'Spacing', 'Layout', 'Colors']) {
     fields.append(field);
     controls.set(setting.key, { input, output, setting });
   }
-  document.getElementById('style-controls').append(section);
+  document.getElementById(group === 'Paper Size' ? 'paper-section' : 'style-controls').append(section);
 }
 
 function color(value, fallback) {
@@ -199,8 +200,10 @@ document.getElementById('advanced-css').addEventListener('toggle', event => {
 
 // The name field starts at the width of the name and grows as it is typed into.
 function sizeNameInput() {
-  nameMirror.textContent = nameInput.value || nameInput.placeholder || '';
+  nameMirror.textContent = nameInput.value;
   nameInput.style.width = `${nameMirror.offsetWidth + 2}px`;
+  nameInput.style.height = 'auto';
+  nameInput.style.height = `${nameInput.scrollHeight}px`;
 }
 
 nameText.addEventListener('click', () => {
@@ -211,7 +214,8 @@ nameText.addEventListener('click', () => {
   nameInput.select();
 });
 function finishRename() {
-  nameInput.value = nameInput.value.trim() || 'Untitled Resume';
+  // A textarea can receive pasted line breaks, which GitHub paths cannot hold.
+  nameInput.value = nameInput.value.replace(/\s+/g, ' ').trim() || 'Untitled Resume';
   nameText.replaceChildren(document.createTextNode(nameInput.value + ' '), node('i', 'bi bi-pencil'));
   nameText.classList.remove('d-none');
   nameInput.classList.add('d-none');

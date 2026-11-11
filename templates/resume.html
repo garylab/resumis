@@ -44,11 +44,12 @@
         <div class="editor-title">
           <button type="button" id="name-text" class="resume-name" title="Rename resume">{{name}} <i class="bi bi-pencil" aria-hidden="true"></i></button>
           <label class="visually-hidden" for="name-input">Resume name</label>
-          <input type="text" id="name-input" name="name" value="{{name}}" class="form-control d-none"/>
+          <textarea id="name-input" name="name" rows="1" class="form-control d-none">{{name}}</textarea>
           <span id="name-mirror" class="resume-name name-mirror" aria-hidden="true"></span>
         </div>
 
         <div class="appearance-scroll">
+          <div id="paper-section"></div>
           <fieldset class="style-section">
             <legend>Quick styles</legend>
             <div id="style-presets" class="style-presets"></div>

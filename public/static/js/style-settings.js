@@ -9,7 +9,7 @@ export const FONTS = {
 };
 
 export const SETTINGS = [
-  { key: 'paper', label: 'Paper size', group: 'Page', variable: '--page-size', type: 'select', options: { A4: 'A4', Letter: 'US Letter' }, value: 'A4', rules: '@page { size: var(--page-size); }' },
+  { key: 'paper', label: 'Paper size', group: 'Paper Size', variable: '--page-size', type: 'select', options: { A4: 'A4', Letter: 'US Letter' }, value: 'A4', rules: '@page { size: var(--page-size); }' },
   { key: 'font', label: 'Body font', group: 'Typography', variable: '--global-font-family', type: 'font', value: FONTS['Times New Roman'], rules: 'html, body { font-family: var(--global-font-family) !important; }' },
   { key: 'headingFont', label: 'Heading font', group: 'Typography', variable: '--header-font-family', type: 'font', value: FONTS.Georgia, rules: 'h1, h2, h3, h4, h5, h6 { font-family: var(--header-font-family) !important; }' },
   { key: 'fontSize', label: 'Font size', group: 'Typography', variable: '--global-font-size', type: 'range', min: 7, max: 16, step: 0.5, unit: 'pt', value: 9, rules: 'html, body { font-size: var(--global-font-size) !important; }' },
