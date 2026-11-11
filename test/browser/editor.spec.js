@@ -98,7 +98,7 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   await expect(frame.locator('h1')).toHaveCSS('color', 'rgb(18, 52, 86)');
   await expect(frame.locator('h1')).toHaveCSS('text-align', 'left');
   await expect(frame.locator('ul').first()).toHaveCSS('column-count', '1');
-  await expect(page.locator('#paper-label')).toHaveText('US Letter');
+  await expect(page.getByLabel('Paper size', { exact: true })).toHaveValue('Letter');
   const savedCss = await page.locator('[name="style"]').inputValue();
   expect(savedCss).toContain(originalCustom);
   expect(savedCss).toContain('--page-size: Letter;');
@@ -118,26 +118,50 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   expect(errors).toEqual([]);
 });
 
-test('the editor fills the screen without the site navbar or footer', async ({ page }) => {
+test('the editor fills the screen without the site navbar, footer, or panel chrome', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/create/project-manager');
   await expect(page.locator('nav.navbar')).toHaveCount(0);
   await expect(page.locator('footer')).toHaveCount(0);
+  // The Markdown and preview panels are bare: no headings, hints, or status note.
+  await expect(page.locator('.panel-heading, .preview-note')).toHaveCount(0);
+  await expect(page.getByText('RESUME EDITOR')).toHaveCount(0);
   const box = await page.locator('.editor-workspace').boundingBox();
-  expect(box.width).toBeGreaterThan(1380); // Full width, minus the page gutters.
-  expect(box.y + box.height).toBeGreaterThan(860); // Reaches the bottom of the viewport.
+  expect(box).toEqual({ x: 0, y: 0, width: 1440, height: 900 }); // Edge to edge.
   // The page itself never scrolls; the Markdown, preview, and appearance panels do.
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
   const editor = await page.locator('.markdown-panel .CodeMirror').boundingBox();
   const panel = await page.locator('.markdown-panel').boundingBox();
   expect(editor.y + editor.height).toBeLessThanOrEqual(panel.y + panel.height + 1);
-  expect(editor.height).toBeGreaterThan(600);
+  expect(editor.height).toBeGreaterThan(800);
   await page.evaluate(() => document.querySelector('.markdown-panel .CodeMirror').CodeMirror.setValue('# Tall\n\n' + 'line\n\n'.repeat(200)));
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
   expect(await page.evaluate(() => {
     const scroller = document.querySelector('.CodeMirror-scroll');
     return scroller.scrollHeight > scroller.clientHeight;
   })).toBe(true);
+});
+
+test('the right bar holds navigation, saving, and the resume name that grows as it is typed', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/create/project-manager');
+  const bar = page.locator('.appearance-panel .editor-bar');
+  await expect(bar.getByRole('link', { name: 'Back to My Resumes' })).toHaveAttribute('href', '/my-resumes');
+  await expect(bar.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
+  await expect(bar.getByRole('button', { name: /PDF$/ })).toBeVisible();
+  // The name sits under that bar, inside the right-hand panel.
+  const barBox = await bar.boundingBox();
+  const nameBox = await page.locator('#name-text').boundingBox();
+  const panelBox = await page.locator('.appearance-panel').boundingBox();
+  expect(nameBox.y).toBeGreaterThanOrEqual(barBox.y + barBox.height);
+  expect(nameBox.x).toBeGreaterThanOrEqual(panelBox.x);
+  await page.locator('#name-text').click();
+  const short = (await page.locator('#name-input').boundingBox()).width;
+  expect(short).toBeLessThan(200); // Starts out as wide as the name itself.
+  await page.locator('#name-input').fill('A considerably longer resume name');
+  const long = (await page.locator('#name-input').boundingBox()).width;
+  expect(long).toBeGreaterThan(short + 60);
+  expect(long).toBeLessThanOrEqual(panelBox.width);
 });
 
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {

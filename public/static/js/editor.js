@@ -8,6 +8,7 @@ const stage = document.getElementById('preview-stage');
 const sheet = document.getElementById('preview-sheet');
 const nameText = document.getElementById('name-text');
 const nameInput = document.getElementById('name-input');
+const nameMirror = document.getElementById('name-mirror');
 const controls = new Map();
 const options = { lineNumbers: false, lineWrapping: true, viewportMargin: 20, inputStyle: 'contenteditable' };
 const contentEditor = CodeMirror.fromTextArea(contentEl, { ...options, mode: 'markdown', spellcheck: true });
@@ -155,7 +156,6 @@ function syncControls() {
     output.value = `${value}${setting.unit ? ` ${setting.unit}` : ''}`;
   }
   paper = appearance.paper;
-  document.getElementById('paper-label').textContent = paper === 'Letter' ? 'US Letter' : 'A4';
 }
 
 function fitPreview() {
@@ -197,9 +197,16 @@ document.getElementById('advanced-css').addEventListener('toggle', event => {
   if (event.currentTarget.open) styleEditor.refresh();
 });
 
+// The name field starts at the width of the name and grows as it is typed into.
+function sizeNameInput() {
+  nameMirror.textContent = nameInput.value || nameInput.placeholder || '';
+  nameInput.style.width = `${nameMirror.offsetWidth + 2}px`;
+}
+
 nameText.addEventListener('click', () => {
   nameText.classList.add('d-none');
   nameInput.classList.remove('d-none');
+  sizeNameInput();
   nameInput.focus();
   nameInput.select();
 });
@@ -210,6 +217,7 @@ function finishRename() {
   nameInput.classList.add('d-none');
   doc.title = nameInput.value;
 }
+nameInput.addEventListener('input', sizeNameInput);
 nameInput.addEventListener('blur', finishRename);
 nameInput.addEventListener('keydown', event => {
   if (event.key === 'Enter') { event.preventDefault(); nameInput.blur(); }

@@ -17,45 +17,37 @@
 <main class="editor-main">
   <form id="saveResume" class="editor-form" action="{{url_for('resume.save')}}" method="post">
     <input type="hidden" name="oldName" value="{{old_name}}">
-    <div class="editor-toolbar">
-      <div class="editor-title">
-        <span class="editor-eyebrow">RESUME EDITOR</span>
-        <button type="button" id="name-text" class="resume-name" title="Rename resume">{{name}} <i class="bi bi-pencil" aria-hidden="true"></i></button>
-        <label class="visually-hidden" for="name-input">Resume name</label>
-        <input type="text" id="name-input" name="name" value="{{name}}" class="form-control d-none"/>
-      </div>
-      <div class="editor-actions">
-        <a class="btn btn-sm btn-light border" href="{{url_for('resume.get_resumes')}}">Back</a>
-        <button type="submit" class="btn btn-outline-yellow">Save</button>
-        <button type="button" id="export-pdf" class="btn btn-yellow"><i class="bi bi-download" aria-hidden="true"></i> Export PDF</button>
-      </div>
-    </div>
-
     <div class="editor-workspace">
-      <section class="editor-panel markdown-panel" aria-labelledby="markdown-heading">
-        <div class="panel-heading">
-          <h1 id="markdown-heading"><span class="panel-dot"></span> Markdown</h1>
-          <span class="panel-hint">Write your story</span>
-        </div>
+      <section class="editor-panel markdown-panel" aria-label="Markdown">
         <label class="visually-hidden" for="resume-markdown">Resume Markdown</label>
         <textarea id="resume-markdown" name="content">{{content}}</textarea>
       </section>
 
-      <section class="editor-panel preview-panel" aria-labelledby="preview-heading">
-        <div class="panel-heading">
-          <h2 id="preview-heading"><span class="panel-dot preview-dot"></span> Live preview</h2>
-          <span id="paper-label" class="paper-label">A4</span>
-        </div>
+      <section class="editor-panel preview-panel" aria-label="Live preview">
         <div id="preview-stage" class="preview-stage">
           <div id="preview-sheet" class="preview-sheet">
             <iframe id="preview" title="Resume preview" sandbox="allow-same-origin allow-modals"></iframe>
           </div>
         </div>
-        <p class="preview-note">Preview fits your screen. PDF uses the selected paper size.</p>
       </section>
 
-      <aside class="editor-panel appearance-panel" aria-labelledby="appearance-heading">
-        <div class="panel-heading"><h2 id="appearance-heading"><i class="bi bi-sliders" aria-hidden="true"></i> Appearance</h2></div>
+      <aside class="editor-panel appearance-panel" aria-label="Appearance">
+        <div class="editor-bar">
+          <a class="icon-btn" href="{{url_for('resume.get_resumes')}}" aria-label="Back to My Resumes"
+             data-bs-toggle="tooltip" data-bs-title="Back to My Resumes"><i class="bi bi-house-door" aria-hidden="true"></i></a>
+          <div class="editor-actions">
+            <button type="submit" class="btn btn-outline-yellow">Save</button>
+            <button type="button" id="export-pdf" class="btn btn-yellow"><i class="bi bi-download" aria-hidden="true"></i> Export PDF</button>
+          </div>
+        </div>
+
+        <div class="editor-title">
+          <button type="button" id="name-text" class="resume-name" title="Rename resume">{{name}} <i class="bi bi-pencil" aria-hidden="true"></i></button>
+          <label class="visually-hidden" for="name-input">Resume name</label>
+          <input type="text" id="name-input" name="name" value="{{name}}" class="form-control d-none"/>
+          <span id="name-mirror" class="resume-name name-mirror" aria-hidden="true"></span>
+        </div>
+
         <div class="appearance-scroll">
           <fieldset class="style-section">
             <legend>Quick styles</legend>
