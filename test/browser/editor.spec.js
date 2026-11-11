@@ -176,7 +176,7 @@ test('the right bar holds navigation, saving, and the resume name that grows as 
   await expect(page.locator('#name-text')).toHaveText('Two lines');
 });
 
-test('the preview marks where each printed page ends', async ({ page }) => {
+test('the preview marks where each printed page ends', async ({ page, browser }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/create');
   await expect(page.locator('.CodeMirror')).toHaveCount(2, { timeout: 30000 });
@@ -186,11 +186,40 @@ test('the preview marks where each printed page ends', async ({ page }) => {
   await expect(page.locator('.page-break').first()).toBeVisible();
   const tops = await page.locator('.page-break').evaluateAll(marks => marks.map(mark => mark.offsetTop));
   expect(tops.length).toBeGreaterThan(1);
-  const gaps = tops.slice(1).map((top, index) => top - tops[index]);
-  for (const gap of gaps) expect(Math.abs(gap - gaps[0])).toBeLessThan(1); // One page apart.
-  const sheet = await page.locator('#preview-sheet').boundingBox();
-  expect(Math.abs(gaps[0] - sheet.width * 297 / 210)).toBeLessThan(2); // A4 proportions.
-  expect(tops.at(-1)).toBeLessThan(sheet.height);
+  // Breaks sit one printable area apart: the paper height less the page margins.
+  const { printable, margin } = await page.evaluate(() => {
+    const frame = document.getElementById('preview');
+    const body = frame.contentWindow.getComputedStyle(frame.contentDocument.body);
+    const scale = document.getElementById('preview-sheet').getBoundingClientRect().width / (210 * 96 / 25.4);
+    const [top, bottom] = [parseFloat(body.paddingTop), parseFloat(body.paddingBottom)];
+    return { printable: (297 * 96 / 25.4 - top - bottom) * scale, margin: top * scale };
+  });
+  expect(Math.abs(tops[0] - (margin + printable))).toBeLessThan(1);
+  for (const [index, top] of tops.entries()) {
+    expect(Math.abs(top - (margin + printable * (index + 1)))).toBeLessThan(1);
+  }
+  expect(tops.at(-1)).toBeLessThan((await page.locator('#preview-sheet').boundingBox()).height);
+});
+
+test('the marked page count matches what Chrome prints', async ({ page, browser }) => {
+  await page.goto('/create/project-manager');
+  await expect(page.locator('.CodeMirror')).toHaveCount(2, { timeout: 30000 });
+  for (const extra of [0, 14]) {
+    await page.evaluate(count => {
+      const editor = document.querySelector('.markdown-panel .CodeMirror').CodeMirror;
+      editor.setValue(editor.getValue().split('\n## Projects')[0]
+        + '\n\n' + '## Extra\n\nSome more resume content here.\n\n'.repeat(count));
+    }, extra);
+    await expect(page.locator('.page-break').first()).toBeVisible();
+    const marked = await page.locator('.page-break').count() + 1;
+    // Print the very document the preview shows, and count the pages Chrome makes of it.
+    const printer = await browser.newPage();
+    await printer.setContent(await page.locator('#preview')
+      .evaluate(frame => frame.contentDocument.documentElement.outerHTML));
+    const pdf = await printer.pdf({ preferCSSPageSize: true, printBackground: true });
+    await printer.close();
+    expect(marked).toBe((pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length);
+  }
 });
 
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {

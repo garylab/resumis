@@ -1,7 +1,14 @@
-// Marks where each printed page ends, so long resumes show their page boundaries.
-function markPageBreaks(sheet, pageHeight, totalHeight) {
+// Marks where each printed page ends. Printing drops the on-screen body padding
+// and applies the same lengths as @page margins, so a page only holds the space
+// between them; the first break therefore lands one printable area below the top
+// padding. Chrome still shifts content to avoid splitting a line or a heading,
+// so treat these as guides rather than exact cuts.
+function markPageBreaks(sheet, geometry) {
+  const { pageHeight, totalHeight, marginTop, marginBottom, scale } = geometry;
+  const printable = Math.max(1, pageHeight - marginTop - marginBottom);
+  const flow = totalHeight - marginTop - marginBottom;
   // Ignore a sliver of overflow, so a resume that just fills a page shows no break.
-  const wanted = Math.max(0, Math.ceil(totalHeight / pageHeight - 0.01) - 1);
+  const wanted = Math.max(0, Math.ceil(flow / printable - 0.01) - 1);
   const marks = sheet.querySelectorAll('.page-break');
   for (const extra of [...marks].slice(wanted)) extra.remove();
   for (let index = marks.length; index < wanted; index++) {
@@ -10,7 +17,7 @@ function markPageBreaks(sheet, pageHeight, totalHeight) {
     sheet.append(mark);
   }
   sheet.querySelectorAll('.page-break').forEach((mark, index) => {
-    mark.style.top = `${pageHeight * (index + 1)}px`;
+    mark.style.top = `${(marginTop + printable * (index + 1)) * scale}px`;
   });
 }
 
@@ -30,5 +37,11 @@ export function fitResumePreview(frame, stage, sheet, paper = 'A4', pageBreaks =
   frame.style.transform = `scale(${scale})`;
   sheet.style.width = `${width * scale}px`;
   sheet.style.height = `${contentHeight * scale}px`;
-  if (pageBreaks) markPageBreaks(sheet, height * scale, contentHeight * scale);
+  if (pageBreaks) {
+    const body = frame.contentWindow.getComputedStyle(doc.body);
+    markPageBreaks(sheet, {
+      pageHeight: height, totalHeight: contentHeight, scale,
+      marginTop: parseFloat(body.paddingTop) || 0, marginBottom: parseFloat(body.paddingBottom) || 0,
+    });
+  }
 }
