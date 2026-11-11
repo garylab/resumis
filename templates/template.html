@@ -13,14 +13,9 @@
 
   <link rel="canonical" href="{{url_for('home.template', slug=to_slug(resume.name), _external=True)}}"/>
 
-  <style>
-      #resume-content {
-        {{resume.css|safe}}
-      }
-  </style>
   {% include 'global/head.html' %}
 </head>
-<body class="bg-light">
+<body class="bg-light template-page">
   {% include 'global/navbar.html' %}
 
   <main class="container content">
@@ -31,8 +26,12 @@
       </a>
     </div>
 
-    <div id="resume-content" class="my-4 border a4 mx-auto">
-        {{resume.html|safe}}
+    <div id="template-preview" class="template-preview my-4 mx-auto">
+      <div id="template-sheet" class="template-sheet">
+        <iframe id="resume-content" title="{{resume.name}} resume preview"
+                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                srcdoc="<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Resume preview</title><style>{{resume.css}}</style></head><body>{{resume.html}}</body></html>"></iframe>
+      </div>
     </div>
 
     <div class="text-center my-4">
@@ -43,5 +42,6 @@
   </main>
 
   {% include 'global/footer.html' %}
+  <script type="module" src="{{url_for('static', filename='js/template-preview.js')}}"></script>
 </body>
 </html>

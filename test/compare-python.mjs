@@ -21,10 +21,7 @@ async function add(template, label, extra = {}, session = {}) {
   cases.push({ template, label, context, actual: await render(template, context, request, session).text() });
 }
 await add('home.html', 'home', { template_names: Object.keys(resumes), css });
-// The visual editor is intentionally redesigned and covered by browser tests.
-for (const resume of Object.values(resumes)) {
-  await add('template.html', `${resume.name} preview`, { resume: { ...resume, css } });
-}
+// The visual editor and isolated template previews are covered by browser tests.
 await add('privacy-policy.html', 'privacy');
 await add('terms-of-service.html', 'terms');
 await add('resumes.html', 'saved resumes', { resumes: ['My CV', 'Unicode résumé'] }, {

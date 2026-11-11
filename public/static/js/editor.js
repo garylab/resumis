@@ -1,4 +1,5 @@
 import { SETTINGS, FONTS, PRESETS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
+import { fitResumePreview } from './preview.js';
 
 const contentEl = document.querySelector('[name="content"]');
 const styleEl = document.querySelector('[name="style"]');
@@ -158,18 +159,7 @@ function syncControls() {
 }
 
 function fitPreview() {
-  const width = paper === 'Letter' ? 816 : 210 * 96 / 25.4;
-  const height = paper === 'Letter' ? 1056 : 297 * 96 / 25.4;
-  preview.style.width = `${width}px`;
-  // Measure content independently of the iframe's previous height, including overflow.
-  preview.style.height = `${height}px`;
-  const previewHeight = Math.max(height, doc.documentElement.scrollHeight, doc.body.scrollHeight);
-  preview.style.height = `${previewHeight}px`;
-  const padding = parseFloat(getComputedStyle(stage).paddingLeft) * 2;
-  const scale = Math.min(1, Math.max(0.1, (stage.clientWidth - padding) / width));
-  preview.style.transform = `scale(${scale})`;
-  sheet.style.width = `${width * scale}px`;
-  sheet.style.height = `${previewHeight * scale}px`;
+  fitResumePreview(preview, stage, sheet, paper);
 }
 
 function render(contentChanged = false) {

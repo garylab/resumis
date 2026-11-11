@@ -49,7 +49,10 @@ test('all public routes, SEO, templates, and Markdown/CSS defaults match the sou
     const slug = name.toLowerCase().replaceAll(' ', '-');
     const preview = await browser.request(`/template/${slug}`);
     assert.equal(preview.status, 200);
-    assert.ok((await preview.text()).includes(resume.html));
+    const previewHtml = await preview.text();
+    const escapeAttribute = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll("'", '&#39;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    assert.ok(previewHtml.includes(escapeAttribute(resume.html)));
+    assert.ok(previewHtml.includes(escapeAttribute(css)));
     const editor = await browser.request(`/create/${slug}`);
     assert.equal(editor.status, 200);
     const editorHtml = await editor.text();

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { createApp } from '../../src/index.js';
 import { sealSession } from '../../src/session.js';
 import { githubMock } from '../github-mock.js';
+import { resumes } from '../../src/generated/data.js';
 
 test('Workers runtime serves home, templates, assets, and policy pages', async ({ page, request }) => {
   const health = await request.get('/health');
@@ -16,8 +17,8 @@ test('Workers runtime serves home, templates, assets, and policy pages', async (
   await expect(page.locator('footer a[href="/"]')).toHaveText('Resumis');
   await expect(page.locator('footer a[href="https://resumis.com"]')).toHaveText('Resumis');
   await page.getByRole('link', { name: 'Project Manager Resume', exact: true }).click();
-  await expect(page.locator('#resume-content')).toContainText('James Smith');
-  await expect(page.locator('#resume-content a').first()).toHaveAttribute('target', '_blank');
+  await expect(page.frameLocator('#resume-content').locator('body')).toContainText('James Smith');
+  await expect(page.frameLocator('#resume-content').locator('a').first()).toHaveAttribute('target', '_blank');
   for (const [path, title] of [['/privacy-policy', 'Privacy Policy'], ['/terms-of-service', 'Terms of Service']]) {
     await page.goto(path);
     await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
@@ -172,4 +173,46 @@ test('legacy custom CSS can be adjusted without replacing its existing rules', a
   expect(await page.locator('[name="style"]').inputValue()).toContain(legacy);
   await page.getByRole('button', { name: 'Reset visual adjustments' }).click();
   expect(await page.locator('[name="style"]').inputValue()).toBe(legacy);
+});
+
+test('all template previews match editor typography, colors, margins, and layout', async ({ page }) => {
+  test.setTimeout(60000);
+  const readStyles = body => {
+    const style = (element, properties) => Object.fromEntries(properties.map(property => [property, getComputedStyle(element).getPropertyValue(property)]));
+    return {
+      body: style(body, ['font-family', 'font-size', 'color', 'padding']),
+      heading: style(body.querySelector('h1'), ['font-family', 'font-size', 'color', 'text-align']),
+      section: style(body.querySelector('h2'), ['margin-top', 'border-bottom-width', 'border-bottom-color']),
+      list: style(body.querySelector('ul'), ['column-count', 'padding-left']),
+    };
+  };
+  for (const name of Object.keys(resumes)) {
+    const slug = name.toLowerCase().replaceAll(' ', '-');
+    await page.goto(`/template/${slug}`);
+    const frame = page.frameLocator('#resume-content');
+    await expect(frame.locator('h1')).toBeVisible();
+    await expect(frame.locator('body')).toHaveCSS('font-size', '12px');
+    await expect(frame.locator('h1')).toHaveCSS('color', 'rgb(0, 126, 165)');
+    await expect(frame.locator('h2').first()).toHaveCSS('border-bottom-width', '1px');
+    const templateStyles = await frame.locator('body').evaluate(readStyles);
+    expect(parseFloat(templateStyles.body.padding)).toBeCloseTo(9 * 96 / 25.4, 2);
+    expect(await page.locator('html').evaluate(el => getComputedStyle(el).getPropertyValue('--theme-color'))).toBe('');
+    const useTemplate = page.getByRole('link', { name: 'Use This Template', exact: true }).first();
+    await expect(useTemplate).toHaveAttribute('href', `/create/${slug}`);
+    await useTemplate.click();
+    await expect(page.getByLabel('Body font', { exact: true })).toBeVisible();
+    expect(await page.frameLocator('#preview').locator('body').evaluate(readStyles)).toEqual(templateStyles);
+  }
+});
+
+test('template previews fit mobile screens while retaining paper dimensions and all content', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/template/project-manager');
+  const frame = page.frameLocator('#resume-content');
+  await expect(frame.locator('h1')).toBeVisible();
+  await expect(page.locator('#resume-content')).toHaveCSS('width', '793.688px');
+  await expect.poll(() => page.locator('#resume-content').evaluate(el => el.getBoundingClientRect().right <= innerWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(await frame.locator('body').evaluate(body => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
+  await page.screenshot({ path: '/tmp/resumis-template-mobile.png', fullPage: true });
 });

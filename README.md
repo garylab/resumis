@@ -120,6 +120,6 @@ Edit `templates/` for pages, `public/static/` for assets, and `data/resumes/` fo
 npm run build
 ```
 
-The optional `npm run test:parity` check requires the parent Python project and `uv`. It compares 12 rendered pages against the original templates, excluding the redesigned editor, customized footer, and configurable analytics; it is not used for Markdown conversion, builds, or deployment.
+The optional `npm run test:parity` check requires the parent Python project and `uv`. It compares four rendered pages against the original templates, excluding the redesigned editor, isolated template previews, customized footer, and configurable analytics; it is not used for Markdown conversion, builds, or deployment.
 
 </details>
