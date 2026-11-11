@@ -7,6 +7,7 @@ export function githubMock() {
   let sequence = 0;
   let failure;
   const repos = [{ full_name: 'gary/resumes' }];
+  const commitDates = new Map();
   const branches = [{ name: 'feature/resumes & css' }, { name: 'main' }];
   function put(path, content) {
     files.set(path, { content, sha: `sha-${++sequence}` });
@@ -48,6 +49,12 @@ export function githubMock() {
       const page = Number(url.searchParams.get('page') || 1);
       return Response.json(values.slice((page - 1) * 100, page * 100));
     }
+    if (url.pathname === '/repos/gary/resumes/commits') {
+      assert.equal(url.searchParams.get('sha'), 'feature/resumes & css');
+      const path = url.searchParams.get('path');
+      const date = commitDates.get(path);
+      return Response.json(date ? [{ commit: { committer: { date } } }] : []);
+    }
     const prefix = '/repos/gary/resumes/contents';
     assert.ok(url.pathname.startsWith(prefix), `Unexpected GitHub URL ${url.href}`);
     const path = decodeURIComponent(url.pathname.slice(prefix.length).replace(/^\//, ''));
@@ -73,5 +80,5 @@ export function githubMock() {
     }
     throw new Error(`Unexpected ${method} ${url.href}`);
   };
-  return { files, calls, repos, branches, put, fetcher, fail: (status, message, method, path) => { failure = { status, message, method, path }; } };
+  return { files, calls, repos, branches, put, fetcher, commitDates, fail: (status, message, method, path) => { failure = { status, message, method, path }; } };
 }

@@ -10,10 +10,11 @@ const error = (message, status = 400, redirectUrl = '') => Response.json({ succe
 const redirect = location => new Response(null, { status: 302, headers: { Location: location } });
 const text = (message, status = 200, headers = {}) => new Response(message, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...headers } });
 const getRoutes = new Set(['/', '/health', '/robots.txt', '/create', '/privacy-policy', '/terms-of-service',
-  '/auth/login', '/auth/callback', '/auth/logout', '/repos', '/repos/branches', '/resume']);
+  '/auth/login', '/auth/callback', '/auth/logout', '/repos', '/repos/branches', '/my-resumes']);
 const postRoutes = new Set(['/repos/save', '/resume/save', '/resume/duplicate', '/resume/delete']);
 const validName = name => name && name !== '.' && name !== '..' && !/[/\\\u0000-\u001f\u007f]/.test(name);
 const editUrl = name => urlFor('resume.edit', { name });
+const resumesUrl = urlFor('resume.get_resumes');
 
 function safeReturnUrl(value, origin) {
   try {
@@ -21,6 +22,12 @@ function safeReturnUrl(value, origin) {
     return url.origin === origin && !url.pathname.startsWith('/auth/')
       ? `${url.pathname}${url.search}${url.hash}` : '/';
   } catch { return '/'; }
+}
+
+function formatDate(value) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return 'Unknown';
+  return `${date.toISOString().slice(0, 10)} ${date.toISOString().slice(11, 16)} UTC`;
 }
 
 function seo(title, keywords = '', description = '', canonical = '') {
@@ -202,13 +209,18 @@ export function createApp(fetcher = (...args) => fetch(...args)) {
           const branch = field('branch').trim();
           if (!/^[^/\s]+\/[^/\s]+$/.test(full_name) || !branch) return error('Invalid repo name or branch name');
           session.repo = { full_name, branch };
-          return rememberRepo(success('Repo saved', '/resume'), request, env, session.user.id, session.repo);
+          return rememberRepo(success('Repo saved', resumesUrl), request, env, session.user.id, session.repo);
         }
         if (!session.repo?.full_name || !session.repo?.branch) {
           return isApi ? error('Please select your Github Repo and branch', 401, '/repos') : redirect('/repos');
         }
-        if (path === '/resume') {
-          return page('resumes.html', { resumes: (await github.list()).filter(item => item.type === 'dir').map(item => item.name) });
+        if (path === resumesUrl) {
+          const names = (await github.list()).filter(item => item.type === 'dir').map(item => item.name);
+          const updates = await Promise.all(names.map(name => github.lastCommitDate(name)));
+          const list = names.map((name, index) => ({ name, updated_at: updates[index], updated: formatDate(updates[index]) }));
+          // Most recently updated first; resumes without a commit date sort last.
+          list.sort((a, b) => b.updated_at.localeCompare(a.updated_at) || a.name.localeCompare(b.name));
+          return page('resumes.html', { resumes: list });
         }
         if (editMatch) {
           const name = editMatch[1];
@@ -241,10 +253,10 @@ export function createApp(fetcher = (...args) => fetch(...args)) {
         if (path === '/resume/duplicate') {
           if (await github.has(`${name}_copy`)) return error('Resume already exists');
           await github.duplicate(name, `${name}_copy`);
-          return success('Resume duplicated', '/resume');
+          return success('Resume duplicated', resumesUrl);
         }
         await github.remove(name);
-        return success('Resume deleted', '/resume');
+        return success('Resume deleted', resumesUrl);
       }
     },
   };

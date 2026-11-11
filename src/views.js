@@ -8,7 +8,7 @@ const routes = {
   'home.terms_of_service': '/terms-of-service', 'auth.login': '/auth/login',
   'auth.callback': '/auth/callback', 'auth.logout': '/auth/logout',
   'repo.get_repos': '/repos', 'repo.get_branches': '/repos/branches', 'repo.save': '/repos/save',
-  'resume.get_resumes': '/resume', 'resume.save': '/resume/save',
+  'resume.get_resumes': '/my-resumes', 'resume.save': '/resume/save',
   'resume.duplicate': '/resume/duplicate', 'resume.delete': '/resume/delete',
 };
 

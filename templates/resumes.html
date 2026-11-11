@@ -25,59 +25,62 @@
       <a class="ms-2 btn btn-sm btn-yellow" href="{{url_for('home.create')}}">New</a>
     </div>
 
-    <div class="d-flex flex-wrap mt-4">
-
+    <ul class="list-group resume-list mt-4">
 
       {% for resume in resumes %}
-      <div class="card border-0 bg-transparent me-3" style="width: 12rem">
-          <div class="card-image-container">
-            <a href="{{url_for('resume.edit', name=resume)}}">
-              <img src="{{url_for('static', filename='img/screenshots/data-scientist.png')}}"
-                   class="card-img-top border radius" alt="{{resume}}" title="{{resume}}">
-            </a>
+      <li class="list-group-item d-flex align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3 text-truncate">
+          <i class="bi bi-file-earmark-text fs-4 text-primary"></i>
 
-              <div class="hover-buttons">
-                  <a class="btn btn-sm btn-primary" href="https://github.com/{{repo.full_name}}/blob/{{repo.branch}}/{{resume}}"
-                     data-bs-toggle="tooltip" data-bs-title="View on GitHub"
-                     target="_blank" rel="nofollow"><i class="bi bi-box-arrow-up-right"></i></a>
-
-                  <form action="{{url_for('resume.duplicate')}}" method="post">
-                    <input type="hidden" name="name" value="{{resume}}">
-                    <button type="submit" class="btn btn-sm btn-warning"
-                       data-bs-toggle="tooltip" data-bs-title="Duplicate"
-                    ><i class="bi bi-copy"></i></button>
-                  </form>
-
-                  <div class="btn-group">
-                      <button class="btn btn-sm btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-trash"></i></button>
-                      <ul class="dropdown-menu confirm-delete">
-                          <li>
-                            <form action="{{url_for('resume.delete')}}" method="post">
-                              <input type="hidden" name="name" value="{{resume}}">
-                              <button type="submit" role="button" class="dropdown-item small remove-item small">Confirm</button>
-                            </form>
-                          </li>
-                      </ul>
-                  </div>
-              </div>
+          <div class="text-truncate">
+            <a class="d-block text-truncate" href="{{url_for('resume.edit', name=resume.name)}}">{{resume.name}}</a>
+            <small class="text-muted">
+              Updated
+              <time datetime="{{resume.updated_at}}" data-relative>{{resume.updated}}</time>
+            </small>
           </div>
-
-        <div class="card-body px-0">
-          <p class="card-title text-center">
-            <a href="{{url_for('resume.edit', name=resume)}}">
-              {{resume}}
-            </a>
-          </p>
         </div>
-      </div>
+
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+          <a class="btn btn-sm btn-primary" href="https://github.com/{{repo.full_name}}/blob/{{repo.branch}}/{{resume.name}}"
+             data-bs-toggle="tooltip" data-bs-title="View on GitHub"
+             target="_blank" rel="nofollow"><i class="bi bi-box-arrow-up-right"></i></a>
+
+          <form action="{{url_for('resume.duplicate')}}" method="post">
+            <input type="hidden" name="name" value="{{resume.name}}">
+            <button type="submit" class="btn btn-sm btn-warning"
+               data-bs-toggle="tooltip" data-bs-title="Duplicate"
+            ><i class="bi bi-copy"></i></button>
+          </form>
+
+          <div class="btn-group">
+              <button class="btn btn-sm btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-trash"></i></button>
+              <ul class="dropdown-menu dropdown-menu-end confirm-delete">
+                  <li>
+                    <form action="{{url_for('resume.delete')}}" method="post">
+                      <input type="hidden" name="name" value="{{resume.name}}">
+                      <button type="submit" role="button" class="dropdown-item small remove-item small">Confirm</button>
+                    </form>
+                  </li>
+              </ul>
+          </div>
+        </div>
+      </li>
       {% endfor %}
 
-    </div>
+      {% if not resumes %}
+      <li class="list-group-item text-center text-muted fw-light py-4">
+        No resumes yet. Select <span class="fw-600">New</span> to create your first one.
+      </li>
+      {% endif %}
+
+    </ul>
   </main>
 
   {% include 'global/footer.html' %}
   <script type="application/javascript">
     initFormSubmits();
+    initRelativeTimes();
   </script>
 </body>
 </html>

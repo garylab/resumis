@@ -72,24 +72,15 @@ h3, h4, h5 {font-size: 1rem;}
 }
 
 /* Card */
-.card-image-container {
-    position: relative;
-}
-.hover-buttons {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    gap: 10px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 1000;
-}
-.card:hover .hover-buttons {
-    opacity: 1;
-}
 .confirm-delete {
     min-width: 4rem;
     padding: 0;
+}
+
+/* Resume list */
+.resume-list .list-group-item {
+    padding: 0.75rem 1rem;
+}
+.resume-list a {
+    text-decoration: none;
 }

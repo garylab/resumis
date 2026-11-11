@@ -164,7 +164,7 @@ test('public pages work without secrets; login explains missing configuration', 
 
 test('authentication and repository guards preserve navigation and JSON responses', async () => {
   const anonymous = await client();
-  for (const path of ['/repos', '/resume', '/resume/edit/CV']) {
+  for (const path of ['/repos', '/my-resumes', '/resume/edit/CV']) {
     const response = await anonymous.request(path);
     assert.equal(response.status, 302);
     assert.equal(response.headers.get('Location'), '/');
@@ -173,7 +173,7 @@ test('authentication and repository guards preserve navigation and JSON response
   assert.equal(denied.status, 401);
   assert.equal((await denied.json()).success, false);
   const signedIn = await client({ user, repo: { full_name: '', branch: '' } });
-  assert.equal((await signedIn.request('/resume')).headers.get('Location'), '/repos');
+  assert.equal((await signedIn.request('/my-resumes')).headers.get('Location'), '/repos');
   const noRepo = await signedIn.request('/resume/save', { form: { name: 'CV' } });
   assert.equal((await noRepo.json()).redirectUrl, '/repos');
 });
@@ -292,7 +292,7 @@ test('repo/branch selection, pagination, escaped branch script, and persistence'
   assert.equal((await browser.request('/repos/branches?repo=')).status, 400);
   assert.equal((await browser.request('/repos/save', { form: { repo: '', branch: '' } })).status, 400);
   const saved = await browser.request('/repos/save', { form: { repo: 'gary/other', branch: 'new-branch' } });
-  assert.deepEqual(await saved.json(), { success: true, message: 'Repo saved', data: {}, redirectUrl: '/resume' });
+  assert.deepEqual(await saved.json(), { success: true, message: 'Repo saved', data: {}, redirectUrl: '/my-resumes' });
   assert.deepEqual((await browser.session()).repo, { full_name: 'gary/other', branch: 'new-branch' });
 });
 
@@ -317,10 +317,10 @@ test('repository preference survives logout and browser restart without persisti
     else browser.cookies.delete('resumis_session');
     assert.deepEqual(await browser.session(), {});
     assert.equal(browser.cookies.get('resumis_repo'), preference);
-    assert.equal((await browser.request('/resume')).headers.get('Location'), '/');
+    assert.equal((await browser.request('/my-resumes')).headers.get('Location'), '/');
     assert.equal((await signIn(browser)).status, 302);
     assert.deepEqual((await browser.session()).repo, repo);
-    assert.equal((await browser.request('/resume')).status, 200);
+    assert.equal((await browser.request('/my-resumes')).status, 200);
     const picker = await (await browser.request('/repos')).text();
     assert.match(picker, /value="gary\/resumes"\s+selected/);
     assert.match(picker, /"feature\/resumes \\u0026 css"/);
@@ -342,7 +342,7 @@ test('unusable preferences are ignored and cannot cross GitHub accounts', async 
     assert.equal((await signIn(browser)).status, 302);
     assert.deepEqual((await browser.session()).repo, { full_name: '', branch: '' });
     assert.equal(browser.mock.calls.filter(call => call.url.pathname.endsWith('/branches')).length, 0);
-    assert.equal((await browser.request('/resume')).headers.get('Location'), '/repos');
+    assert.equal((await browser.request('/my-resumes')).headers.get('Location'), '/repos');
   }
 });
 
@@ -356,7 +356,7 @@ test('missing branches or inaccessible repositories fall back to selection witho
     assert.equal((await signIn(browser)).status, 302);
     assert.deepEqual((await browser.session()).user, user);
     assert.deepEqual((await browser.session()).repo, { full_name: '', branch: '' });
-    assert.equal((await browser.request('/resume')).headers.get('Location'), '/repos');
+    assert.equal((await browser.request('/my-resumes')).headers.get('Location'), '/repos');
   }
 });
 
@@ -371,7 +371,7 @@ test('invalid repository saves do not overwrite the remembered selection', async
 test('full resume lifecycle with Unicode names/content and branch-scoped GitHub commits', async () => {
   const browser = await client({ user, repo });
   const form = { oldName: '', name: '我的 CV & résumé', content: '# Gary\n\n你好 👋', style: 'body { color: red; }' };
-  assert.equal((await browser.request('/resume')).status, 200); // Empty repository.
+  assert.equal((await browser.request('/my-resumes')).status, 200); // Empty repository.
   const created = await browser.request('/resume/save', { form });
   assert.equal(created.status, 200);
   const result = await created.json();
@@ -381,7 +381,7 @@ test('full resume lifecycle with Unicode names/content and branch-scoped GitHub 
   const edit = await browser.request(result.redirectUrl);
   assert.equal(edit.status, 200);
   assert.match(await edit.text(), /你好 👋/);
-  assert.match(await (await browser.request('/resume')).text(), /我的 CV &amp; résumé/);
+  assert.match(await (await browser.request('/my-resumes')).text(), /我的 CV &amp; résumé/);
   assert.equal((await browser.request('/resume/save', { form })).status, 400);
   const writesBefore = browser.mock.calls.filter(call => call.method === 'PUT').length;
   await browser.request('/resume/save', { form: { ...form, oldName: form.name } });
@@ -398,6 +398,19 @@ test('full resume lifecycle with Unicode names/content and branch-scoped GitHub 
   assert.equal((await deleted.json()).message, 'Resume deleted');
   assert.equal(browser.mock.files.has('Updated CV/resume.md'), false);
   assert.equal(browser.mock.files.has('Updated CV_copy/resume.md'), true);
+});
+
+test('the resume list shows update times, newest first', async () => {
+  const browser = await client({ user, repo });
+  for (const name of ['Older CV', 'Newest CV', 'Undated CV']) browser.mock.put(`${name}/resume.md`, '# CV');
+  browser.mock.commitDates.set('Older CV', '2026-01-02T03:04:05Z');
+  browser.mock.commitDates.set('Newest CV', '2026-11-10T08:09:10Z');
+  const page = await (await browser.request('/my-resumes')).text();
+  const order = [...page.matchAll(/\/resume\/edit\/([^"]+)"/g)].map(match => decodeURIComponent(match[1]));
+  assert.deepEqual(order, ['Newest CV', 'Older CV', 'Undated CV']);
+  assert.match(page, /datetime="2026-11-10T08:09:10Z"[^>]*>2026-11-10 08:09 UTC/);
+  assert.match(page, /datetime=""[^>]*>Unknown/);
+  assert.doesNotMatch(page, /<img/);
 });
 
 test('duplicate and delete include nested files', async () => {
@@ -431,7 +444,7 @@ test('invalid resume requests and rename collisions leave existing files intact'
 test('GitHub auth failures clear the session and flash once for page requests', async () => {
   const browser = await client({ user, repo });
   browser.mock.fail(401, 'Bad credentials');
-  const page = await browser.request('/resume');
+  const page = await browser.request('/my-resumes');
   assert.equal(page.headers.get('Location'), '/');
   assert.equal((await browser.session()).user, undefined);
   assert.match(await (await browser.request('/')).text(), /Your Github token is invalid/);

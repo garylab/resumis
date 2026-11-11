@@ -67,6 +67,12 @@ export class Github {
     }
     return Buffer.from(file.content, 'base64').toString('utf8');
   }
+  async lastCommitDate(path) {
+    const query = new URLSearchParams({ sha: this.branch, path, per_page: '1' });
+    const commits = await this.request('GET', `/repos/${encodePath(this.repo)}/commits?${query}`, undefined, true);
+    const commit = Array.isArray(commits) ? commits[0]?.commit : null;
+    return commit?.committer?.date || commit?.author?.date || '';
+  }
   create(path, content) {
     return this.request('PUT', this.contentsPath(path), {
       message: `Create [${path}]`, content: Buffer.from(content, 'utf8').toString('base64'), branch: this.branch,

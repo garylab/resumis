@@ -82,6 +82,31 @@ function initFormSubmits() {
 }
 
 /**
+ * Timestamps
+ */
+function relativeTime(date) {
+    const units = [['year', 31536000], ['month', 2592000], ['week', 604800],
+                   ['day', 86400], ['hour', 3600], ['minute', 60]];
+    const seconds = (date.getTime() - Date.now()) / 1000;
+    const formatter = new Intl.RelativeTimeFormat(undefined, {numeric: 'auto'});
+    for (const [unit, size] of units) {
+        if (Math.abs(seconds) >= size) {
+            return formatter.format(Math.round(seconds / size), unit);
+        }
+    }
+    return formatter.format(Math.round(seconds), 'second');
+}
+
+function initRelativeTimes() {
+    document.querySelectorAll('time[data-relative][datetime]').forEach(timeEl => {
+        const date = new Date(timeEl.getAttribute('datetime'));
+        if (isNaN(date.getTime())) return; // Keep the server-rendered fallback.
+        timeEl.title = date.toLocaleString();
+        timeEl.textContent = relativeTime(date);
+    });
+}
+
+/**
  * Repo and branch
  */
 async function fetchBranches(url, defaultBranch) {

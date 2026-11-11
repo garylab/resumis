@@ -24,9 +24,8 @@ await add('home.html', 'home', { template_names: Object.keys(resumes), css });
 // The visual editor and isolated template previews are covered by browser tests.
 await add('privacy-policy.html', 'privacy');
 await add('terms-of-service.html', 'terms');
-await add('resumes.html', 'saved resumes', { resumes: ['My CV', 'Unicode résumé'] }, {
-  user: { name: 'Gary & Co' }, repo: { full_name: 'gary/resumes', branch: 'main' },
-});
+// The saved resume list is now a list view with update times, replacing the
+// original screenshot cards. Its rendering is covered by app tests.
 console.log(execFileSync('uv', ['run', '--with', 'Jinja2==3.1.6', 'python', 'test/python-reference.py'], {
   input: JSON.stringify({ cases, routes }), encoding: 'utf8', maxBuffer: 4 * 1024 * 1024,
 }).trim());
