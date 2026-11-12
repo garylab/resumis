@@ -4,6 +4,15 @@ import { sealSession } from '../../src/session.js';
 import { githubMock } from '../github-mock.js';
 import { resumes } from '../../src/generated/data.js';
 
+async function drag(page, selector, byX) {
+  const box = await page.locator(selector).boundingBox();
+  const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + byX, y, { steps: 10 });
+  await page.mouse.up();
+}
+
 test('Workers runtime serves home, templates, assets, and policy pages', async ({ page, request }) => {
   const health = await request.get('/health');
   expect(await health.json()).toEqual({ alive: true });
@@ -87,7 +96,7 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   await setSlider(page, 'Horizontal margins', 15);
   await setSlider(page, 'Vertical margins', 12);
   await setSlider(page, 'Section spacing', 20);
-  await page.getByLabel('Paper size', { exact: true }).selectOption('Letter');
+  await page.getByRole('radio', { name: 'US Letter' }).click();
   await page.getByLabel('Bullet list columns', { exact: true }).selectOption('1');
   await page.getByLabel('Name & contact alignment', { exact: true }).selectOption('left');
   await page.getByLabel('Headings', { exact: true }).fill('#123456');
@@ -98,7 +107,7 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   await expect(frame.locator('h1')).toHaveCSS('color', 'rgb(18, 52, 86)');
   await expect(frame.locator('h1')).toHaveCSS('text-align', 'left');
   await expect(frame.locator('ul').first()).toHaveCSS('column-count', '1');
-  await expect(page.getByLabel('Paper size', { exact: true })).toHaveValue('Letter');
+  await expect(page.getByRole('radio', { name: 'US Letter' })).toHaveAttribute('aria-checked', 'true');
   const savedCss = await page.locator('[name="style"]').inputValue();
   expect(savedCss).toContain(originalCustom);
   expect(savedCss).toContain('--page-size: Letter;');
@@ -143,7 +152,7 @@ test('the editor fills the screen without the site navbar, footer, or panel chro
   })).toBe(true);
 });
 
-test('the right bar holds navigation, saving, and the resume name that grows as it is typed', async ({ page }) => {
+test('the right bar holds navigation, saving, and the resume name field', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/create/project-manager');
   const bar = page.locator('.appearance-panel .editor-bar');
@@ -162,14 +171,12 @@ test('the right bar holds navigation, saving, and the resume name that grows as 
   await expect(page.locator('#paper-section')).toContainText('Paper Size');
   await page.locator('#name-text').click();
   await expect(page.locator('#name-input')).toHaveJSProperty('tagName', 'TEXTAREA');
-  const short = (await page.locator('#name-input').boundingBox()).width;
-  expect(short).toBeLessThan(200); // Starts out as wide as the name itself.
-  await page.locator('#name-input').fill('A considerably longer resume name');
-  const long = (await page.locator('#name-input').boundingBox()).width;
-  expect(long).toBeGreaterThan(short + 60);
-  expect(long).toBeLessThanOrEqual(panelBox.width);
+  const field = await page.locator('#name-input').boundingBox();
+  const title = await page.locator('.editor-title').boundingBox();
+  expect(Math.abs(field.width - (title.width - 28))).toBeLessThan(2); // Full width of the panel.
   // Wrapped text grows the field downwards instead of being clipped.
-  expect((await page.locator('#name-input').boundingBox()).height).toBeGreaterThan(30);
+  await page.locator('#name-input').fill('A considerably longer resume name that will wrap onto a second line');
+  expect((await page.locator('#name-input').boundingBox()).height).toBeGreaterThan(field.height + 10);
   // Line breaks cannot reach a name that becomes a GitHub folder path.
   await page.locator('#name-input').fill('Two\nlines');
   await page.locator('#name-input').blur();
@@ -222,6 +229,29 @@ test('the marked page count matches what Chrome prints', async ({ page, browser 
   }
 });
 
+test('the column dividers resize the panels and the choice is remembered', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/create/project-manager');
+  await expect(page.locator('.CodeMirror')).toHaveCount(2, { timeout: 30000 });
+  const widths = () => page.evaluate(() => Object.fromEntries(['markdown', 'preview', 'appearance']
+    .map(name => [name, Math.round(document.querySelector(`.${name}-panel`).getBoundingClientRect().width)])));
+  const before = await widths();
+  await drag(page, '.col-resizer[data-edge="markdown"]', 120);
+  const wider = await widths();
+  // The divider trades width between the two panels it sits between.
+  expect(wider.markdown).toBe(before.markdown + 120);
+  expect(wider.preview).toBe(before.preview - 120);
+  expect(wider.appearance).toBe(before.appearance);
+  await drag(page, '.col-resizer[data-edge="appearance"]', -60);
+  const narrower = await widths();
+  expect(narrower.appearance).toBe(wider.appearance + 60);
+  expect(narrower.preview).toBe(wider.preview - 60);
+  expect(narrower.markdown).toBe(wider.markdown);
+  await page.reload();
+  await expect(page.locator('.CodeMirror')).toHaveCount(2, { timeout: 30000 });
+  expect(await widths()).toEqual(narrower);
+});
+
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/create');
@@ -251,13 +281,13 @@ test('visual styles are saved to GitHub and restored when reopening a resume', a
   await page.getByRole('button', { name: 'Modern', exact: true }).click();
   await page.getByLabel('Headings', { exact: true }).fill('#552288');
   await setSlider(page, 'Font size', 12);
-  await page.getByLabel('Paper size', { exact: true }).selectOption('Letter');
+  await page.getByRole('radio', { name: 'US Letter' }).click();
   const savedCss = await page.locator('[name="style"]').inputValue();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await page.waitForURL('**/resume/edit/**');
   await expect(page.getByLabel('Font size', { exact: true })).toHaveValue('12');
   await expect(page.getByLabel('Headings', { exact: true })).toHaveValue('#552288');
-  await expect(page.getByLabel('Paper size', { exact: true })).toHaveValue('Letter');
+  await expect(page.getByRole('radio', { name: 'US Letter' })).toHaveAttribute('aria-checked', 'true');
   await expect(page.frameLocator('#preview').locator('h1')).toHaveCSS('color', 'rgb(85, 34, 136)');
   // Browser multipart forms normalize textarea line endings to CRLF.
   expect(mock.files.get('Project Manager/style.css').content.replaceAll('\r\n', '\n')).toBe(savedCss);
@@ -266,10 +296,10 @@ test('visual styles are saved to GitHub and restored when reopening a resume', a
 
 test('legacy custom CSS can be adjusted without replacing its existing rules', async ({ page }) => {
   await page.goto('/create/project-manager');
-  await expect(page.getByLabel('Paper size', { exact: true })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'A4', exact: true })).toBeVisible();
   const legacy = 'body { color: rgb(123, 45, 67); font-family: Courier New; padding: 10mm; }\n@media print { @page { size: Letter; } }';
   await page.evaluate(css => document.querySelector('#advanced-css .CodeMirror').CodeMirror.setValue(css), legacy);
-  await expect(page.getByLabel('Paper size', { exact: true })).toHaveValue('Letter');
+  await expect(page.getByRole('radio', { name: 'US Letter' })).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByLabel('Horizontal margins', { exact: true })).toHaveValue('10');
   await page.getByLabel('Headings', { exact: true }).fill('#112233');
   await expect(page.frameLocator('#preview').locator('h1')).toHaveCSS('color', 'rgb(17, 34, 51)');

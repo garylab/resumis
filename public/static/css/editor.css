@@ -1,4 +1,4 @@
-.resume-editor-page { background: #f4f5f7 !important; height: 100%; min-height: 100%; overflow: hidden; }
+.resume-editor-page { background: #e9ecf0 !important; height: 100%; min-height: 100%; overflow: hidden; }
 /* A gutter at the screen edges only; the three panels stay flush with each other. */
 .editor-main { flex: 1; min-height: 0; padding: 0 12px; display: flex; flex-direction: column; }
 .editor-form { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -7,12 +7,16 @@
 .icon-btn:hover, .icon-btn:focus-visible { background: #fff5e7; border-color: #f4ba6d; color: #925b12; }
 .editor-title { flex-shrink: 0; position: relative; min-width: 0; padding: 12px 14px; border-bottom: 1px solid #eceef2; }
 .resume-name { max-width: 100%; border: 0; padding: 0; background: none; text-align: left; color: #252641; font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
-/* Measures the typed name so the input can grow with it. */
-.name-mirror { position: absolute; top: 0; left: 0; visibility: hidden; pointer-events: none; white-space: pre; }
 .resume-name i { margin-left: 6px; font-size: 12px; color: #9397a1; }
 .editor-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .editor-actions .btn { padding-left: 1rem; padding-right: 1rem; white-space: nowrap; }
-.editor-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(320px, 1.3fr) minmax(320px, 1.25fr) 320px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.editor-workspace { --preview-width: 537px; --appearance-width: 320px; position: relative; flex: 1; min-height: 0; display: grid;
+  grid-template-columns: minmax(260px, 1fr) var(--preview-width) var(--appearance-width); grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.col-resizer { position: absolute; top: 0; bottom: 0; width: 7px; z-index: 3; cursor: col-resize; background: transparent; }
+.col-resizer[data-edge="markdown"] { right: calc(var(--preview-width) + var(--appearance-width) - 3px); }
+.col-resizer[data-edge="appearance"] { right: calc(var(--appearance-width) - 3px); }
+.col-resizer:hover, .col-resizer:focus-visible { background: #f4ba6d80; outline: none; }
+body.resizing-columns { cursor: col-resize; user-select: none; }
 .editor-panel { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
 .editor-panel { border-left: 1px solid #e0e3e8; }
 /* Inset from the top and bottom of the screen, but flush against the preview. */
@@ -28,6 +32,10 @@
 .style-section legend { float: left; width: 100%; margin: 0 0 12px; font-size: 12px; font-weight: 650; color: #35394f; }
 .style-section legend + div { clear: both; }
 .style-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.style-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.style-switch button { border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 8px 2px; font-size: 12px; }
+.style-switch button:hover, .style-switch button:focus-visible { background: #fff8ed; border-color: #f4ba6d; }
+.style-switch button[aria-checked="true"] { background: #fff5e7; color: #925b12; border-color: #f4ba6d; font-weight: 600; }
 .style-presets button { border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 8px 2px; font-size: 11px; }
 .style-presets button:hover, .style-presets button:focus-visible { background: #fff8ed; border-color: #f4ba6d; }
 .style-presets button[aria-pressed="true"] { background: #fff5e7; color: #925b12; border-color: #f4ba6d; }
@@ -51,11 +59,12 @@
 .advanced-css p { font-size: 11px; color: #858b99; line-height: 1.5; margin: 10px 0; }
 .advanced-css .CodeMirror { padding: 4px; font-size: 11px; height: 260px; border: 1px solid #e0e3e8 !important; }
 .advanced-css .CodeMirror-line { font-size: 11px; }
-.editor-title #name-input { min-width: 0; max-width: 100%; padding: 0; font-size: 18px; font-weight: 600; line-height: 1.35; resize: none; overflow: hidden; }
+.editor-title #name-input { width: 100%; padding: 0; font-size: 18px; font-weight: 600; line-height: 1.35; resize: none; overflow: hidden; }
 /* Stacked panels no longer fit one screen, so narrow layouts scroll the page. */
 @media (max-width: 1150px) {
   .resume-editor-page { height: auto; min-height: 100vh; overflow: visible; }
   .editor-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); grid-template-rows: none; align-items: start; }
+  .col-resizer { display: none; }
   /* Leave the save bar and name in view below the editor and preview. */
   .markdown-panel .CodeMirror { flex: none; height: calc(100vh - 150px); min-height: 420px; }
   .preview-stage { flex: none; height: calc(100vh - 150px); min-height: 420px; }

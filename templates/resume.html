@@ -45,7 +45,6 @@
           <button type="button" id="name-text" class="resume-name" title="Rename resume">{{name}} <i class="bi bi-pencil" aria-hidden="true"></i></button>
           <label class="visually-hidden" for="name-input">Resume name</label>
           <textarea id="name-input" name="name" rows="1" class="form-control d-none">{{name}}</textarea>
-          <span id="name-mirror" class="resume-name name-mirror" aria-hidden="true"></span>
         </div>
 
         <div class="appearance-scroll">
@@ -67,6 +66,11 @@
           </details>
         </div>
       </aside>
+
+      <div class="col-resizer" data-edge="markdown" role="separator" tabindex="0"
+           aria-orientation="vertical" aria-label="Resize the Markdown panel"></div>
+      <div class="col-resizer" data-edge="appearance" role="separator" tabindex="0"
+           aria-orientation="vertical" aria-label="Resize the appearance panel"></div>
     </div>
   </form>
 </main>

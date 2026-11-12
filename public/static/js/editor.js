@@ -1,5 +1,6 @@
 import { SETTINGS, FONTS, PRESETS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
 import { fitResumePreview } from './preview.js';
+import { initPanelResizers } from './panels.js';
 
 const contentEl = document.querySelector('[name="content"]');
 const styleEl = document.querySelector('[name="style"]');
@@ -8,7 +9,6 @@ const stage = document.getElementById('preview-stage');
 const sheet = document.getElementById('preview-sheet');
 const nameText = document.getElementById('name-text');
 const nameInput = document.getElementById('name-input');
-const nameMirror = document.getElementById('name-mirror');
 const controls = new Map();
 const options = { lineNumbers: false, lineWrapping: true, viewportMargin: 20, inputStyle: 'contenteditable' };
 const contentEditor = CodeMirror.fromTextArea(contentEl, { ...options, mode: 'markdown', spellcheck: true });
@@ -50,10 +50,29 @@ for (const group of ['Paper Size', 'Typography', 'Spacing', 'Layout', 'Colors'])
   section.append(fields);
   for (const setting of SETTINGS.filter(item => item.group === group)) {
     const field = node('div', 'style-field');
-    // The paper group holds one control, so its legend is the only label shown.
-    const label = node('label', setting.key === 'paper' ? 'visually-hidden' : '', setting.label);
+    const label = node('label', '', setting.label);
     label.htmlFor = `style-${setting.key}`;
     const output = node('output');
+    if (setting.type === 'switch') {
+      // One button per choice, so the whole group's state is visible at a glance.
+      const options = node('div', 'style-switch');
+      options.id = label.htmlFor;
+      options.setAttribute('role', 'radiogroup');
+      options.setAttribute('aria-label', setting.label);
+      for (const [value, text] of Object.entries(setting.options)) {
+        const option = node('button', '', text);
+        option.type = 'button';
+        option.dataset.value = value;
+        option.setAttribute('role', 'radio');
+        option.setAttribute('aria-checked', 'false');
+        option.addEventListener('click', () => applySettings({ [setting.key]: value }));
+        options.append(option);
+      }
+      field.append(options);
+      fields.append(field);
+      controls.set(setting.key, { input: options, output, setting });
+      continue;
+    }
     const input = node(setting.type === 'select' || setting.type === 'font' ? 'select' : 'input');
     input.id = label.htmlFor;
     output.htmlFor = input.id;
@@ -138,6 +157,10 @@ function syncControls() {
   const saved = readAdjustments(styleEl.value);
   for (const { input, output, setting } of controls.values()) {
     let value = saved[setting.key] ?? appearance[setting.key] ?? setting.value;
+    if (setting.type === 'switch') {
+      for (const option of input.children) option.setAttribute('aria-checked', String(option.dataset.value === String(value)));
+      continue;
+    }
     if (setting.type === 'font') {
       input.querySelector('[data-custom]')?.remove();
       const family = text => text.split(',')[0].replaceAll(/['"]/g, '').trim().toLowerCase();
@@ -200,8 +223,6 @@ document.getElementById('advanced-css').addEventListener('toggle', event => {
 
 // The name field starts at the width of the name and grows as it is typed into.
 function sizeNameInput() {
-  nameMirror.textContent = nameInput.value;
-  nameInput.style.width = `${nameMirror.offsetWidth + 2}px`;
   nameInput.style.height = 'auto';
   nameInput.style.height = `${nameInput.scrollHeight}px`;
 }
@@ -239,6 +260,7 @@ document.getElementById('saveResume').addEventListener('submit', () => {
   styleEditor.save();
 });
 initFormSubmits();
+initPanelResizers(document.querySelector('.editor-workspace'));
 render(true);
 new ResizeObserver(fitPreview).observe(stage);
 doc.addEventListener('load', fitPreview, true);
