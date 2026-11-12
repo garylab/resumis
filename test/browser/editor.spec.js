@@ -183,6 +183,26 @@ test('the right bar holds navigation, saving, and the resume name field', async 
   await expect(page.locator('#name-text')).toHaveText('Two lines');
 });
 
+test('the preview scrolls in one box beside the paper', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/create/project-manager');
+  await expect(page.locator('.CodeMirror')).toHaveCount(2, { timeout: 30000 });
+  const scrolling = await page.locator('.preview-panel *').evaluateAll(nodes => nodes
+    .filter(node => node.scrollHeight > node.clientHeight + 2 && ['auto', 'scroll'].includes(getComputedStyle(node).overflowY))
+    .map(node => node.id));
+  expect(scrolling).toEqual(['preview-scroll']); // Not the stage, and not the frame.
+  const frame = await page.locator('#preview').evaluate(element => {
+    const doc = element.contentDocument;
+    return { overflow: doc.defaultView.getComputedStyle(doc.documentElement).overflowY, over: doc.documentElement.scrollHeight - doc.documentElement.clientHeight };
+  });
+  expect(frame).toEqual({ overflow: 'hidden', over: 0 });
+  // The scrollbar lands against the paper rather than against the appearance panel.
+  const sheet = await page.locator('#preview-sheet').boundingBox();
+  const box = await page.locator('#preview-scroll').boundingBox();
+  expect(box.x + box.width).toBeGreaterThanOrEqual(sheet.x + sheet.width - 1);
+  expect(box.x + box.width).toBeLessThan(sheet.x + sheet.width + 20);
+});
+
 test('the preview marks where each printed page ends', async ({ page, browser }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/create');

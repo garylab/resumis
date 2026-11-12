@@ -23,7 +23,9 @@ body.resizing-columns { cursor: col-resize; user-select: none; }
 .markdown-panel { margin: 12px 0; border: 1px solid #e0e3e8; border-right: 0; }
 .appearance-panel { border-right: 1px solid #e0e3e8; }
 .markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 16px 10px 16px 14px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
-.preview-stage { background: #e9ecf0; padding: 14px 6px; overflow: auto; flex: 1; min-height: 0; }
+/* The scrollbar belongs beside the paper, not against the appearance panel. */
+.preview-stage { background: #e9ecf0; padding: 14px 6px; overflow: hidden; flex: 1; min-height: 0; display: flex; justify-content: center; }
+.preview-scroll { max-height: 100%; overflow-y: auto; overflow-x: hidden; }
 .preview-sheet { position: relative; margin: 0 auto; background: white; box-shadow: 0 3px 16px #242c3c18; }
 .page-break { position: absolute; left: 0; right: 0; border-top: 1px dashed #98a0ae; pointer-events: none; }
 #preview { display: block; border: 0; background: white; transform-origin: top left; width: 210mm; height: 297mm; }
@@ -68,6 +70,7 @@ body.resizing-columns { cursor: col-resize; user-select: none; }
   /* Leave the save bar and name in view below the editor and preview. */
   .markdown-panel .CodeMirror { flex: none; height: calc(100vh - 150px); min-height: 420px; }
   .preview-stage { flex: none; height: calc(100vh - 150px); min-height: 420px; }
+  .preview-scroll { max-height: none; height: 100%; }
   .preview-panel { border-right: 1px solid #e0e3e8; }
   .markdown-panel { margin: 12px 0 0; }
   .appearance-panel { border-top: 1px solid #e0e3e8; }

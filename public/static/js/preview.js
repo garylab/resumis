@@ -33,7 +33,10 @@ export function fitResumePreview(frame, stage, sheet, paper = 'A4', pageBreaks =
   frame.style.height = `${contentHeight}px`;
   const style = getComputedStyle(stage);
   const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-  const scale = Math.min(1, Math.max(0.1, (stage.clientWidth - padding) / width));
+  // When the sheet scrolls in its own box, that box's scrollbar sits inside the stage.
+  const scroller = sheet.parentElement;
+  const bar = scroller === stage ? 0 : scroller.offsetWidth - scroller.clientWidth;
+  const scale = Math.min(1, Math.max(0.1, (stage.clientWidth - padding - bar) / width));
   frame.style.transform = `scale(${scale})`;
   sheet.style.width = `${width * scale}px`;
   sheet.style.height = `${contentHeight * scale}px`;

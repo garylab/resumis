@@ -6,6 +6,7 @@ const contentEl = document.querySelector('[name="content"]');
 const styleEl = document.querySelector('[name="style"]');
 const preview = document.getElementById('preview');
 const stage = document.getElementById('preview-stage');
+const scroller = document.getElementById('preview-scroll');
 const sheet = document.getElementById('preview-sheet');
 const nameText = document.getElementById('name-text');
 const nameInput = document.getElementById('name-input');
@@ -21,8 +22,11 @@ const doc = preview.contentDocument;
 doc.open();
 doc.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title></title></head><body></body></html>');
 doc.close();
+// The frame is sized to its content, so its own scrollbars would only be in the way.
+const frameStyle = doc.createElement('style');
+frameStyle.textContent = 'html { overflow: hidden; }';
 const styleNode = doc.createElement('style');
-doc.head.append(styleNode);
+doc.head.append(frameStyle, styleNode);
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -187,13 +191,13 @@ function fitPreview() {
 }
 
 function render(contentChanged = false) {
-  const scrollTop = stage.scrollTop;
+  const scrollTop = scroller.scrollTop;
   if (contentChanged) doc.body.innerHTML = marked.parse(contentEditor.getValue());
   styleNode.textContent = styleEditor.getValue();
   doc.title = nameInput.value;
   syncControls();
   fitPreview();
-  stage.scrollTop = scrollTop;
+  scroller.scrollTop = scrollTop;
 }
 
 function applySettings(values) {
