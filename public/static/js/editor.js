@@ -1,4 +1,4 @@
-import { SETTINGS, FONTS, FONT_GROUPS, PRESETS, PRESET_ICONS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
+import { SETTINGS, FONTS, PRESETS, PRESET_ICONS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
 import { fitResumePreview } from './preview.js';
 import { initPanelResizers } from './panels.js';
 
@@ -85,16 +85,11 @@ for (const group of ['Paper Size', 'Typography', 'Spacing', 'Layout', 'Colors'])
     input.id = label.htmlFor;
     output.htmlFor = input.id;
     if (setting.type === 'font') {
-      // Each choice is shown in its own typeface, grouped by the kind of face.
-      for (const { label: title, fonts } of FONT_GROUPS) {
-        const optgroup = document.createElement('optgroup');
-        optgroup.label = title;
-        for (const name of fonts) {
-          const option = new Option(name, FONTS[name]);
-          option.style.fontFamily = FONTS[name];
-          optgroup.append(option);
-        }
-        input.append(optgroup);
+      // Each choice is shown in its own typeface.
+      for (const name of Object.keys(FONTS).sort()) {
+        const option = new Option(name, FONTS[name]);
+        option.style.fontFamily = FONTS[name];
+        input.append(option);
       }
       field.append(label, input);
     } else if (input.tagName === 'SELECT') {

@@ -18,14 +18,6 @@ export const FONTS = {
   'Noto Sans SC': "'Noto Sans SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif",
 };
 
-// Grouped for the font pickers; the order is the order people see.
-export const FONT_GROUPS = [
-  { label: 'Sans serif', fonts: ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans 3', 'IBM Plex Sans', 'Montserrat', 'Poppins', 'Arial', 'Verdana', 'Trebuchet MS'] },
-  { label: 'Serif', fonts: ['Georgia', 'Times New Roman'] },
-  { label: 'Monospace', fonts: ['Courier New'] },
-  { label: 'Chinese', fonts: ['Noto Sans SC'] },
-];
-
 export const SETTINGS = [
   { key: 'paper', label: 'Paper size', group: 'Paper Size', variable: '--page-size', type: 'switch', options: { A4: 'A4', Letter: 'US Letter' }, value: 'A4', rules: '@page { size: var(--page-size); }' },
   { key: 'font', label: 'Body font', group: 'Typography', variable: '--global-font-family', type: 'font', value: FONTS['Times New Roman'], rules: 'html, body { font-family: var(--global-font-family) !important; }' },
