@@ -45,6 +45,7 @@ test('all public routes, SEO, templates, and Markdown/CSS defaults match the sou
   assert.match(html, /<a[^>]*href="\/">Resumis<\/a>/);
   assert.doesNotMatch(html, /\{%|\{\{/);
   assert.equal(Object.keys(resumes).length, 8);
+  const quickStyles = new Set();
   for (const [name, resume] of Object.entries(resumes)) {
     const slug = name.toLowerCase().replaceAll(' ', '-');
     const preview = await browser.request(`/template/${slug}`);
@@ -60,8 +61,15 @@ test('all public routes, SEO, templates, and Markdown/CSS defaults match the sou
     assert.match(editorHtml, /src="\/static\/js\/editor.js"/);
     assert.match(editorHtml, /id="export-pdf"/);
     assert.ok(css.length > 100);
+    // Each template layers one quick style over the shared stylesheet.
+    assert.ok(resume.css.startsWith(css));
+    const style = resume.css.match(/visual styles:start[\s\S]*?visual styles:end/)?.[0];
+    assert.ok(style, `${name} has no quick style`);
+    quickStyles.add(style);
+    assert.ok(editorHtml.includes(style.match(/--theme-color: [^;]+;/)[0]));
     assert.equal(resume.content, await readFile(new URL(`../data/resumes/${name}.md`, import.meta.url), 'utf8'));
   }
+  assert.equal(quickStyles.size, 8); // No two templates look alike.
   for (const path of ['/create', '/privacy-policy', '/terms-of-service', '/robots.txt']) {
     assert.equal((await browser.request(path)).status, 200, path);
   }

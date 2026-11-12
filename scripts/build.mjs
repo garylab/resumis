@@ -2,6 +2,19 @@ import { readFile, readdir, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import MarkdownIt from 'markdown-it';
 import nunjucks from 'nunjucks';
+import { PRESETS, updateStyle } from '../public/static/js/style-settings.js';
+
+// One quick style per resume template, so the gallery shows what each looks like.
+const styles = {
+  'Data Scientist': 'Classic',
+  'Full Stack Engineer': 'Modern',
+  'Machine Learning Engineer': 'Academic',
+  'Project Manager': 'Executive',
+  'Senior Backend Engineer': 'Developer',
+  'Senior Data Engineer': 'Romantic',
+  'Senior DevOps Engineer': 'Compact',
+  'Senior Frontend Engineer': 'Designer',
+};
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = `${root}src/generated`;
@@ -33,12 +46,14 @@ markdown.renderer.rules.link_open = (tokens, index, options, env, renderer) => {
   return renderer.renderToken(tokens, index, options);
 };
 const files = (await readdir(`${root}data/resumes`)).filter(name => name.endsWith('.md')).sort();
+const css = await readFile(`${root}data/default.css`, 'utf8');
 const resumes = {};
 for (const file of files) {
   const name = file.slice(0, -3);
+  const style = PRESETS[styles[name]];
+  if (!style) throw new Error(`No quick style is assigned to the ${name} template`);
   const content = await readFile(`${root}data/resumes/${file}`, 'utf8');
-  resumes[name] = { name, content, html: markdown.render(content) };
+  resumes[name] = { name, content, html: markdown.render(content), css: updateStyle(css, style) };
 }
-const css = await readFile(`${root}data/default.css`, 'utf8');
 await writeFile(`${output}/data.js`, `export const resumes = ${JSON.stringify(resumes)};\nexport const css = ${JSON.stringify(css)};\n`);
 console.log(`Built ${names.length} page templates and ${files.length} resume templates.`);

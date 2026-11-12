@@ -3,6 +3,7 @@ import { createApp } from '../../src/index.js';
 import { sealSession } from '../../src/session.js';
 import { githubMock } from '../github-mock.js';
 import { resumes } from '../../src/generated/data.js';
+import { clearAdjustments } from '../../public/static/js/style-settings.js';
 
 async function drag(page, selector, byX) {
   const box = await page.locator(selector).boundingBox();
@@ -109,7 +110,8 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   await expect(frame.locator('ul').first()).toHaveCSS('column-count', '1');
   await expect(page.getByRole('radio', { name: 'US Letter' })).toHaveAttribute('aria-checked', 'true');
   const savedCss = await page.locator('[name="style"]').inputValue();
-  expect(savedCss).toContain(originalCustom);
+  // Everything outside the generated block, including the template's own rules, is untouched.
+  expect(clearAdjustments(savedCss)).toBe(clearAdjustments(originalCustom));
   expect(savedCss).toContain('--page-size: Letter;');
   expect(savedCss).toContain('--global-font-size: 11pt;');
   expect(savedCss).toContain('--page-margin-x: 15mm;');
@@ -121,7 +123,7 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   await page.getByRole('button', { name: 'Modern', exact: true }).click();
   await expect(page.getByLabel('Body font', { exact: true })).toHaveValue('Arial, Helvetica, sans-serif');
   await page.getByRole('button', { name: 'Reset visual adjustments' }).click();
-  expect(await page.locator('[name="style"]').inputValue()).toBe(originalCustom);
+  expect(await page.locator('[name="style"]').inputValue()).toBe(clearAdjustments(originalCustom));
   expect(originalCustom).toContain(originalCss);
   await expect(frame.locator('h1')).toHaveCSS('text-align', 'center');
   expect(errors).toEqual([]);
@@ -275,7 +277,7 @@ test('the column dividers resize the panels and the choice is remembered', async
 test('each quick style restyles the preview and its controls', async ({ page }) => {
   await page.goto('/create/project-manager');
   await expect(page.locator('#style-presets button'))
-    .toHaveText(['Classic', 'Modern', 'Compact', 'Developer', 'Designer', 'Romantic']);
+    .toHaveText(['Classic', 'Modern', 'Compact', 'Developer', 'Designer', 'Academic', 'Executive', 'Romantic']);
   const heading = page.frameLocator('#preview').locator('h1');
   await page.getByRole('button', { name: 'Developer', exact: true }).click();
   await expect(heading).toHaveCSS('font-family', /Courier New/);
@@ -346,7 +348,7 @@ test('legacy custom CSS can be adjusted without replacing its existing rules', a
   expect(await page.locator('[name="style"]').inputValue()).toBe(legacy);
 });
 
-test('all template previews match editor typography, colors, margins, and layout', async ({ page }) => {
+test('every template keeps its own look, from the preview through to the editor', async ({ page }) => {
   test.setTimeout(60000);
   const readStyles = body => {
     const style = (element, properties) => Object.fromEntries(properties.map(property => [property, getComputedStyle(element).getPropertyValue(property)]));
@@ -357,23 +359,25 @@ test('all template previews match editor typography, colors, margins, and layout
       list: style(body.querySelector('ul'), ['column-count', 'padding-left']),
     };
   };
+  const looks = [];
   for (const name of Object.keys(resumes)) {
     const slug = name.toLowerCase().replaceAll(' ', '-');
     await page.goto(`/template/${slug}`);
     const frame = page.frameLocator('#resume-content');
     await expect(frame.locator('h1')).toBeVisible();
-    await expect(frame.locator('body')).toHaveCSS('font-size', '12px');
-    await expect(frame.locator('h1')).toHaveCSS('color', 'rgb(0, 126, 165)');
     await expect(frame.locator('h2').first()).toHaveCSS('border-bottom-width', '1px');
     const templateStyles = await frame.locator('body').evaluate(readStyles);
-    expect(parseFloat(templateStyles.body.padding)).toBeCloseTo(9 * 96 / 25.4, 2);
+    expect(parseFloat(templateStyles.body.padding)).toBeGreaterThan(0);
     expect(await page.locator('html').evaluate(el => getComputedStyle(el).getPropertyValue('--theme-color'))).toBe('');
     const useTemplate = page.getByRole('link', { name: 'Use This Template', exact: true }).first();
     await expect(useTemplate).toHaveAttribute('href', `/create/${slug}`);
     await useTemplate.click();
     await expect(page.getByLabel('Body font', { exact: true })).toBeVisible();
     expect(await page.frameLocator('#preview').locator('body').evaluate(readStyles)).toEqual(templateStyles);
+    looks.push(JSON.stringify(templateStyles));
   }
+  // Each template ships with a different quick style.
+  expect(new Set(looks).size).toBe(looks.length);
 });
 
 test('template previews fit mobile screens while retaining paper dimensions and all content', async ({ page }) => {

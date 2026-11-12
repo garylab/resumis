@@ -106,14 +106,14 @@ export function createApp(fetcher = (...args) => fetch(...args)) {
         if (path === '/') return page('home.html', { template_names: Object.keys(resumes), css });
         if (templateMatch) {
           const resume = resumes[fromSlug(templateMatch[1])];
-          return resume ? page('template.html', { resume: { ...resume, css } }) : text('Not Found', 404);
+          return resume ? page('template.html', { resume }) : text('Not Found', 404);
         }
         if (path === '/create' || createMatch) {
           const resume = createMatch ? resumes[fromSlug(createMatch[1])] : null;
           if (createMatch && !resume) return text(`Template ${fromSlug(createMatch[1])} not found`, 404);
           const name = resume?.name || 'Untitled Resume';
           return page('resume.html', {
-            old_name: '', name, content: resume?.content || '', style: css,
+            old_name: '', name, content: resume?.content || '', style: resume?.css || css,
             seo: resume ? seo(`Create a ${name} Markdown Resume from Template Online`,
               `${name} resume, markdown resume, resume builder, Github`,
               `Create a ${name} Markdown resume with ${siteName(env)}. Easily build and customize resume and save it to your own Github repository.`,
