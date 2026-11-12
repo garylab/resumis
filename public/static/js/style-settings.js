@@ -31,6 +31,9 @@ export const PRESETS = {
   Classic: { ...DEFAULTS },
   Modern: { ...DEFAULTS, font: FONTS.Arial, headingFont: FONTS.Arial, fontSize: 10, lineHeight: 1.5, headingColor: '#25636b', linkColor: '#25636b', columns: '1', alignment: 'left', sectionSpacing: 14, marginX: 14, marginY: 14 },
   Compact: { ...DEFAULTS, font: FONTS.Arial, headingFont: FONTS.Arial, fontSize: 8.5, lineHeight: 1.4, headingScale: 0.9, marginX: 8, marginY: 8, sectionSpacing: 10, headingColor: '#252641' },
+  Developer: { ...DEFAULTS, font: FONTS.Arial, headingFont: FONTS['Courier New'], fontSize: 9, lineHeight: 1.5, headingScale: 0.95, marginX: 12, marginY: 12, sectionSpacing: 14, columns: '1', alignment: 'left', headingColor: '#2f6f4f', textColor: '#2b2f33', linkColor: '#2f6f4f', dividerColor: '#dde3e0' },
+  Designer: { ...DEFAULTS, font: FONTS['Trebuchet MS'], headingFont: FONTS['Trebuchet MS'], fontSize: 9.5, lineHeight: 1.6, headingScale: 1.2, marginX: 16, marginY: 14, sectionSpacing: 20, alignment: 'left', headingColor: '#b2560d', textColor: '#333333', linkColor: '#b2560d', dividerColor: '#f0d9c4' },
+  Romantic: { ...DEFAULTS, font: FONTS.Georgia, headingFont: FONTS.Georgia, fontSize: 9.5, lineHeight: 1.8, headingScale: 1.1, marginX: 18, marginY: 16, sectionSpacing: 18, columns: '1', alignment: 'center', headingColor: '#9b3b5a', textColor: '#3f3238', linkColor: '#9b3b5a', dividerColor: '#f0d6de' },
 };
 
 const managedBlock = /\n{0,2}\/\* Resumis visual styles:start \*\/[\s\S]*?\/\* Resumis visual styles:end \*\//g;

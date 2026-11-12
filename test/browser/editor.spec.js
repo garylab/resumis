@@ -272,6 +272,23 @@ test('the column dividers resize the panels and the choice is remembered', async
   expect(await widths()).toEqual(narrower);
 });
 
+test('each quick style restyles the preview and its controls', async ({ page }) => {
+  await page.goto('/create/project-manager');
+  await expect(page.locator('#style-presets button'))
+    .toHaveText(['Classic', 'Modern', 'Compact', 'Developer', 'Designer', 'Romantic']);
+  const heading = page.frameLocator('#preview').locator('h1');
+  await page.getByRole('button', { name: 'Developer', exact: true }).click();
+  await expect(heading).toHaveCSS('font-family', /Courier New/);
+  await expect(page.getByLabel('Heading font', { exact: true })).toHaveValue(/Courier New/);
+  await page.getByRole('button', { name: 'Designer', exact: true }).click();
+  await expect(heading).toHaveCSS('color', 'rgb(178, 86, 13)');
+  await expect(heading).toHaveCSS('font-family', /Trebuchet MS/);
+  await page.getByRole('button', { name: 'Romantic', exact: true }).click();
+  await expect(heading).toHaveCSS('color', 'rgb(155, 59, 90)');
+  await expect(heading).toHaveCSS('text-align', 'center');
+  await expect(page.getByLabel('Line height', { exact: true })).toHaveValue('1.8');
+});
+
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/create');
