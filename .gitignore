@@ -6,5 +6,6 @@ node_modules/
 .env*
 dist/
 src/generated/
+public/static/fonts/
 test-results/
 playwright-report/

@@ -16,6 +16,8 @@ def canonical(value):
     # The configurable footer intentionally replaces the original footer.
     # Its new branding and Markdown behavior are covered by app tests.
     value = re.sub(r'<footer\b[^>]*>.*?</footer>', '', value, flags=re.DOTALL)
+    # Fonts are now downloaded at build time and served from /static/fonts.
+    value = re.sub(r'<link[^>]*fonts[^>]*>', '', value)
     # Analytics is now optional and configured per request, covered by app tests.
     value = re.sub(r'<!-- Google tag \(gtag\.js\) -->\s*<script\b[^>]*>.*?</script>\s*<script>.*?</script>', '', value, flags=re.DOTALL)
     return re.sub(r'\s+', ' ', html.unescape(value)).strip()

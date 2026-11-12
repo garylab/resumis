@@ -70,6 +70,18 @@ test('all public routes, SEO, templates, and Markdown/CSS defaults match the sou
     assert.equal(resume.content, await readFile(new URL(`../data/resumes/${name}.md`, import.meta.url), 'utf8'));
   }
   assert.equal(quickStyles.size, 8); // No two templates look alike.
+  // Fonts are served from our own origin, never fetched from Google.
+  const fonts = await readFile(new URL('../public/static/fonts/fonts.css', import.meta.url), 'utf8');
+  assert.match(fonts, /@font-face/);
+  assert.match(fonts, /src: url\(\/static\/fonts\/[^)]+\.woff2\)/);
+  assert.doesNotMatch(fonts, /fonts\.gstatic\.com|fonts\.googleapis\.com/);
+  for (const path of ['/', '/create', '/template/project-manager']) {
+    const page = await (await browser.request(path)).text();
+    assert.doesNotMatch(page, /fonts\.googleapis\.com|fonts\.gstatic\.com/, path);
+    assert.match(page, /\/static\/fonts\/ui\.css/, path); // Poppins for the pages themselves.
+  }
+  // Resume previews carry the whole set of resume fonts.
+  assert.match(await (await browser.request('/template/project-manager')).text(), /\/static\/fonts\/fonts\.css/);
   for (const path of ['/create', '/privacy-policy', '/terms-of-service', '/robots.txt']) {
     assert.equal((await browser.request(path)).status, 200, path);
   }

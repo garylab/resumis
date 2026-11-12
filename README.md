@@ -120,6 +120,8 @@ Edit `templates/` for pages, `public/static/` for assets, and `data/resumes/` fo
 npm run build
 ```
 
+The build also downloads the resume typefaces from Google Fonts into `public/static/fonts/` (ignored by Git, like `src/generated/`) and writes `fonts.css` for resume previews and `ui.css` for the site itself, so neither pages nor resumes request anything from Google at runtime. Files already downloaded are reused, and a build without network keeps the ones it has. Add a family in `scripts/fonts.mjs` and list it in `FONTS` in `public/static/js/style-settings.js` to offer it in the editor.
+
 The optional `npm run test:parity` check requires the parent Python project and `uv`. It compares four rendered pages against the original templates, excluding the redesigned editor, isolated template previews, customized footer, and configurable analytics; it is not used for Markdown conversion, builds, or deployment.
 
 </details>

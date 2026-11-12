@@ -6,6 +6,16 @@ export const FONTS = {
   Verdana: 'Verdana, Geneva, sans-serif',
   'Trebuchet MS': "'Trebuchet MS', Arial, sans-serif",
   'Courier New': "'Courier New', monospace",
+  // Served from /static/fonts, downloaded at build time.
+  Inter: "Inter, 'Helvetica Neue', Arial, sans-serif",
+  Roboto: 'Roboto, Arial, sans-serif',
+  Lato: "Lato, 'Helvetica Neue', Arial, sans-serif",
+  'Open Sans': "'Open Sans', Arial, sans-serif",
+  'Source Sans 3': "'Source Sans 3', 'Source Sans Pro', Arial, sans-serif",
+  'IBM Plex Sans': "'IBM Plex Sans', Arial, sans-serif",
+  Montserrat: "Montserrat, 'Helvetica Neue', Arial, sans-serif",
+  Poppins: "Poppins, 'Helvetica Neue', Arial, sans-serif",
+  'Noto Sans SC': "'Noto Sans SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif",
 };
 
 export const SETTINGS = [

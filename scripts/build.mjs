@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import MarkdownIt from 'markdown-it';
 import nunjucks from 'nunjucks';
 import { PRESETS, updateStyle } from '../public/static/js/style-settings.js';
+import { buildFonts } from './fonts.mjs';
 
 // One quick style per resume template, so the gallery shows what each looks like.
 const styles = {
@@ -56,4 +57,5 @@ for (const file of files) {
   resumes[name] = { name, content, html: markdown.render(content), css: updateStyle(css, style) };
 }
 await writeFile(`${output}/data.js`, `export const resumes = ${JSON.stringify(resumes)};\nexport const css = ${JSON.stringify(css)};\n`);
-console.log(`Built ${names.length} page templates and ${files.length} resume templates.`);
+const faces = await buildFonts(root);
+console.log(`Built ${names.length} page templates, ${files.length} resume templates, and ${faces} self-hosted font faces.`);

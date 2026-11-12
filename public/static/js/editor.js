@@ -20,7 +20,8 @@ let paper = 'A4';
 // Keep the same preview document while editing, so scrolling and print state survive updates.
 const doc = preview.contentDocument;
 doc.open();
-doc.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title></title></head><body></body></html>');
+doc.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title></title>'
+  + '<link rel="stylesheet" href="/static/fonts/fonts.css"></head><body></body></html>');
 doc.close();
 // The frame is sized to its content, so its own scrollbars would only be in the way.
 const frameStyle = doc.createElement('style');

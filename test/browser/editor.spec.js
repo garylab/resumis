@@ -291,6 +291,31 @@ test('each quick style restyles the preview and its controls', async ({ page }) 
   await expect(page.getByLabel('Line height', { exact: true })).toHaveValue('1.8');
 });
 
+test('resume fonts are served from this origin and render in the preview', async ({ page, request }) => {
+  const outside = [];
+  const served = [];
+  page.on('request', call => {
+    if (/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(call.url())) outside.push(call.url());
+    if (call.url().includes('/static/fonts/')) served.push(call.url());
+  });
+  const stylesheet = await request.get('/static/fonts/fonts.css');
+  expect(stylesheet.status()).toBe(200);
+  expect(await stylesheet.text()).toContain('/static/fonts/');
+  await page.goto('/create/project-manager');
+  await expect(page.getByLabel('Body font', { exact: true })).toBeVisible();
+  for (const font of ['Inter', 'Noto Sans SC']) {
+    await page.getByLabel('Body font', { exact: true }).selectOption({ label: font });
+    await expect(page.frameLocator('#preview').locator('body')).toHaveCSS('font-family', new RegExp(font));
+    // The preview pulls the face itself from us, rather than only naming it.
+    const slug = font.toLowerCase().replaceAll(' ', '-');
+    await expect.poll(() => served.some(url => url.includes(`/static/fonts/${slug}-`) && url.endsWith('.woff2')))
+      .toBe(true);
+  }
+  await page.goto('/template/senior-frontend-engineer');
+  await expect(page.frameLocator('#resume-content').locator('h1')).toBeVisible();
+  expect(outside).toEqual([]);
+});
+
 test('blank resumes have working controls and the editor fits a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/create');
