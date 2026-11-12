@@ -121,7 +121,7 @@ test('visual controls update the preview, print styles, and saved CSS without lo
   expect(await frame.locator('html').evaluate(el => getComputedStyle(el).getPropertyValue('--page-size').trim())).toBe('Letter');
   await page.emulateMedia({ media: 'screen' });
   await page.getByRole('button', { name: 'Modern', exact: true }).click();
-  await expect(page.getByLabel('Body font', { exact: true })).toHaveValue('Arial, Helvetica, sans-serif');
+  await expect(page.getByLabel('Body font', { exact: true })).toHaveValue("Inter, 'Helvetica Neue', Arial, sans-serif");
   await page.getByRole('button', { name: 'Reset visual adjustments' }).click();
   expect(await page.locator('[name="style"]').inputValue()).toBe(clearAdjustments(originalCustom));
   expect(originalCustom).toContain(originalCss);
@@ -282,9 +282,11 @@ test('each quick style restyles the preview and its controls', async ({ page }) 
   await page.getByRole('button', { name: 'Developer', exact: true }).click();
   await expect(heading).toHaveCSS('font-family', /Courier New/);
   await expect(page.getByLabel('Heading font', { exact: true })).toHaveValue(/Courier New/);
+  await expect(page.frameLocator('#preview').locator('body')).toHaveCSS('font-family', /IBM Plex Sans/);
   await page.getByRole('button', { name: 'Designer', exact: true }).click();
   await expect(heading).toHaveCSS('color', 'rgb(178, 86, 13)');
-  await expect(heading).toHaveCSS('font-family', /Trebuchet MS/);
+  await expect(heading).toHaveCSS('font-family', /Montserrat/);
+  await expect(page.frameLocator('#preview').locator('body')).toHaveCSS('font-family', /Lato/);
   await page.getByRole('button', { name: 'Romantic', exact: true }).click();
   await expect(heading).toHaveCSS('color', 'rgb(155, 59, 90)');
   await expect(heading).toHaveCSS('text-align', 'center');
@@ -293,10 +295,8 @@ test('each quick style restyles the preview and its controls', async ({ page }) 
 
 test('resume fonts are served from this origin and render in the preview', async ({ page, request }) => {
   const outside = [];
-  const served = [];
   page.on('request', call => {
     if (/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(call.url())) outside.push(call.url());
-    if (call.url().includes('/static/fonts/')) served.push(call.url());
   });
   const stylesheet = await request.get('/static/fonts/fonts.css');
   expect(stylesheet.status()).toBe(200);
@@ -306,10 +306,12 @@ test('resume fonts are served from this origin and render in the preview', async
   for (const font of ['Inter', 'Noto Sans SC']) {
     await page.getByLabel('Body font', { exact: true }).selectOption({ label: font });
     await expect(page.frameLocator('#preview').locator('body')).toHaveCSS('font-family', new RegExp(font));
-    // The preview pulls the face itself from us, rather than only naming it.
-    const slug = font.toLowerCase().replaceAll(' ', '-');
-    await expect.poll(() => served.some(url => url.includes(`/static/fonts/${slug}-`) && url.endsWith('.woff2')))
-      .toBe(true);
+    // The face itself is loaded, not just named.
+    await expect.poll(() => page.locator('#preview').evaluate(async (frame, name) => {
+      const doc = frame.contentDocument;
+      await doc.fonts.load(`16px "${name}"`, 'Resume');
+      return [...doc.fonts].some(face => face.family.replaceAll('"', '') === name && face.status === 'loaded');
+    }, font)).toBe(true);
   }
   await page.goto('/template/senior-frontend-engineer');
   await expect(page.frameLocator('#resume-content').locator('h1')).toBeVisible();

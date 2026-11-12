@@ -18,6 +18,14 @@ export const FONTS = {
   'Noto Sans SC': "'Noto Sans SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif",
 };
 
+// Grouped for the font pickers; the order is the order people see.
+export const FONT_GROUPS = [
+  { label: 'Sans serif', fonts: ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans 3', 'IBM Plex Sans', 'Montserrat', 'Poppins', 'Arial', 'Verdana', 'Trebuchet MS'] },
+  { label: 'Serif', fonts: ['Georgia', 'Times New Roman'] },
+  { label: 'Monospace', fonts: ['Courier New'] },
+  { label: 'Chinese', fonts: ['Noto Sans SC'] },
+];
+
 export const SETTINGS = [
   { key: 'paper', label: 'Paper size', group: 'Paper Size', variable: '--page-size', type: 'switch', options: { A4: 'A4', Letter: 'US Letter' }, value: 'A4', rules: '@page { size: var(--page-size); }' },
   { key: 'font', label: 'Body font', group: 'Typography', variable: '--global-font-family', type: 'font', value: FONTS['Times New Roman'], rules: 'html, body { font-family: var(--global-font-family) !important; }' },
@@ -39,12 +47,12 @@ export const SETTINGS = [
 export const DEFAULTS = Object.fromEntries(SETTINGS.map(setting => [setting.key, setting.value]));
 export const PRESETS = {
   Classic: { ...DEFAULTS },
-  Modern: { ...DEFAULTS, font: FONTS.Arial, headingFont: FONTS.Arial, fontSize: 10, lineHeight: 1.5, headingColor: '#25636b', linkColor: '#25636b', columns: '1', alignment: 'left', sectionSpacing: 14, marginX: 14, marginY: 14 },
-  Compact: { ...DEFAULTS, font: FONTS.Arial, headingFont: FONTS.Arial, fontSize: 8.5, lineHeight: 1.4, headingScale: 0.9, marginX: 8, marginY: 8, sectionSpacing: 10, headingColor: '#252641' },
-  Developer: { ...DEFAULTS, font: FONTS.Arial, headingFont: FONTS['Courier New'], fontSize: 9, lineHeight: 1.5, headingScale: 0.95, marginX: 12, marginY: 12, sectionSpacing: 14, columns: '1', alignment: 'left', headingColor: '#2f6f4f', textColor: '#2b2f33', linkColor: '#2f6f4f', dividerColor: '#dde3e0' },
-  Designer: { ...DEFAULTS, font: FONTS['Trebuchet MS'], headingFont: FONTS['Trebuchet MS'], fontSize: 9.5, lineHeight: 1.6, headingScale: 1.2, marginX: 16, marginY: 14, sectionSpacing: 20, alignment: 'left', headingColor: '#b2560d', textColor: '#333333', linkColor: '#b2560d', dividerColor: '#f0d9c4' },
+  Modern: { ...DEFAULTS, font: FONTS.Inter, headingFont: FONTS.Inter, fontSize: 10, lineHeight: 1.5, headingColor: '#25636b', linkColor: '#25636b', columns: '1', alignment: 'left', sectionSpacing: 14, marginX: 14, marginY: 14 },
+  Compact: { ...DEFAULTS, font: FONTS.Roboto, headingFont: FONTS.Roboto, fontSize: 8.5, lineHeight: 1.4, headingScale: 0.9, marginX: 8, marginY: 8, sectionSpacing: 10, headingColor: '#252641' },
+  Developer: { ...DEFAULTS, font: FONTS['IBM Plex Sans'], headingFont: FONTS['Courier New'], fontSize: 9, lineHeight: 1.5, headingScale: 0.95, marginX: 12, marginY: 12, sectionSpacing: 14, columns: '1', alignment: 'left', headingColor: '#2f6f4f', textColor: '#2b2f33', linkColor: '#2f6f4f', dividerColor: '#dde3e0' },
+  Designer: { ...DEFAULTS, font: FONTS.Lato, headingFont: FONTS.Montserrat, fontSize: 9.5, lineHeight: 1.6, headingScale: 1.2, marginX: 16, marginY: 14, sectionSpacing: 20, alignment: 'left', headingColor: '#b2560d', textColor: '#333333', linkColor: '#b2560d', dividerColor: '#f0d9c4' },
   Academic: { ...DEFAULTS, font: FONTS['Times New Roman'], headingFont: FONTS['Times New Roman'], fontSize: 10, lineHeight: 1.6, headingScale: 1.05, marginX: 16, marginY: 16, sectionSpacing: 16, columns: '1', alignment: 'left', headingColor: '#1f3a5f', textColor: '#2c2c2c', linkColor: '#1f3a5f', dividerColor: '#dde3ec' },
-  Executive: { ...DEFAULTS, font: FONTS.Arial, headingFont: FONTS.Georgia, fontSize: 9.5, lineHeight: 1.55, headingScale: 1.1, marginX: 14, marginY: 14, sectionSpacing: 18, columns: '1', alignment: 'left', headingColor: '#243b53', textColor: '#2d3340', linkColor: '#1f6f8b', dividerColor: '#d8dee9' },
+  Executive: { ...DEFAULTS, font: FONTS['Source Sans 3'], headingFont: FONTS.Georgia, fontSize: 9.5, lineHeight: 1.55, headingScale: 1.1, marginX: 14, marginY: 14, sectionSpacing: 18, columns: '1', alignment: 'left', headingColor: '#243b53', textColor: '#2d3340', linkColor: '#1f6f8b', dividerColor: '#d8dee9' },
   Romantic: { ...DEFAULTS, font: FONTS.Georgia, headingFont: FONTS.Georgia, fontSize: 9.5, lineHeight: 1.8, headingScale: 1.1, marginX: 18, marginY: 16, sectionSpacing: 18, columns: '1', alignment: 'center', headingColor: '#9b3b5a', textColor: '#3f3238', linkColor: '#9b3b5a', dividerColor: '#f0d6de' },
 };
 

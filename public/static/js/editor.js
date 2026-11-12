@@ -1,4 +1,4 @@
-import { SETTINGS, FONTS, PRESETS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
+import { SETTINGS, FONTS, FONT_GROUPS, PRESETS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
 import { fitResumePreview } from './preview.js';
 import { initPanelResizers } from './panels.js';
 
@@ -81,9 +81,21 @@ for (const group of ['Paper Size', 'Typography', 'Spacing', 'Layout', 'Colors'])
     const input = node(setting.type === 'select' || setting.type === 'font' ? 'select' : 'input');
     input.id = label.htmlFor;
     output.htmlFor = input.id;
-    if (input.tagName === 'SELECT') {
-      const choices = setting.type === 'font' ? Object.fromEntries(Object.entries(FONTS).map(([label, value]) => [value, label])) : setting.options;
-      for (const [value, label] of Object.entries(choices)) input.add(new Option(label, value));
+    if (setting.type === 'font') {
+      // Each choice is shown in its own typeface, grouped by the kind of face.
+      for (const { label: title, fonts } of FONT_GROUPS) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = title;
+        for (const name of fonts) {
+          const option = new Option(name, FONTS[name]);
+          option.style.fontFamily = FONTS[name];
+          optgroup.append(option);
+        }
+        input.append(optgroup);
+      }
+      field.append(label, input);
+    } else if (input.tagName === 'SELECT') {
+      for (const [value, text] of Object.entries(setting.options)) input.add(new Option(text, value));
       field.append(label, input);
     } else if (setting.type === 'range') {
       input.type = 'range';
@@ -174,8 +186,11 @@ function syncControls() {
       else {
         const custom = new Option(`Custom: ${value.split(',')[0].replaceAll(/['"]/g, '')}`, value);
         custom.dataset.custom = 'true';
+        custom.style.fontFamily = value;
         input.add(custom);
       }
+      // The closed picker reads in the face it names.
+      input.style.fontFamily = value;
     }
     if (setting.type === 'range') {
       input.min = Math.min(setting.min, Number(value));
@@ -191,12 +206,21 @@ function fitPreview() {
   fitResumePreview(preview, stage, sheet, paper, true);
 }
 
+function warmFonts() {
+  if (!doc.fonts) return;
+  for (const { input, setting } of controls.values()) {
+    if (setting.type !== 'font') continue;
+    for (const weight of [400, 700]) doc.fonts.load(`${weight} 16px ${input.value}`).catch(() => {});
+  }
+}
+
 function render(contentChanged = false) {
   const scrollTop = scroller.scrollTop;
   if (contentChanged) doc.body.innerHTML = marked.parse(contentEditor.getValue());
   styleNode.textContent = styleEditor.getValue();
   doc.title = nameInput.value;
   syncControls();
+  warmFonts();
   fitPreview();
   scroller.scrollTop = scrollTop;
 }
