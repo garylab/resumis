@@ -12,11 +12,11 @@
 .resume-name i { margin-left: 6px; font-size: 12px; color: #9397a1; }
 .editor-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .editor-actions .btn { padding-left: 1rem; padding-right: 1rem; white-space: nowrap; }
-.editor-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(280px, 1.1fr) minmax(320px, 1.4fr) 320px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.editor-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(320px, 1.3fr) minmax(320px, 1.25fr) 320px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
 .editor-panel { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
 .editor-panel { border-left: 1px solid #e0e3e8; }
 /* Inset from the top and bottom of the screen, but flush against the preview. */
-.markdown-panel { margin: 12px 0; border: 1px solid #e0e3e8; border-right: 0; border-radius: 10px 0 0 10px; }
+.markdown-panel { margin: 12px 0; border: 1px solid #e0e3e8; border-right: 0; }
 .appearance-panel { border-right: 1px solid #e0e3e8; }
 .markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 16px 10px 16px 14px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
 .preview-stage { background: #e9ecf0; padding: 14px 6px; overflow: auto; flex: 1; min-height: 0; }
