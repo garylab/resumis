@@ -56,6 +56,12 @@ export const PRESETS = {
   Romantic: { ...DEFAULTS, font: FONTS.Georgia, headingFont: FONTS.Georgia, fontSize: 9.5, lineHeight: 1.8, headingScale: 1.1, marginX: 18, marginY: 16, sectionSpacing: 18, columns: '1', alignment: 'center', headingColor: '#9b3b5a', textColor: '#3f3238', linkColor: '#9b3b5a', dividerColor: '#f0d6de' },
 };
 
+export const PRESET_ICONS = {
+  Classic: 'bi-file-earmark-text', Modern: 'bi-stars', Compact: 'bi-arrows-collapse',
+  Developer: 'bi-code-slash', Designer: 'bi-palette', Academic: 'bi-mortarboard',
+  Executive: 'bi-briefcase', Romantic: 'bi-heart',
+};
+
 const managedBlock = /\n{0,2}\/\* Resumis visual styles:start \*\/[\s\S]*?\/\* Resumis visual styles:end \*\//g;
 
 function validValue(setting, value) {

@@ -167,6 +167,11 @@ test('the right bar holds navigation, saving, and the resume name field', async 
   const panelBox = await page.locator('.appearance-panel').boundingBox();
   expect(nameBox.y).toBeGreaterThanOrEqual(barBox.y + barBox.height);
   expect(nameBox.x).toBeGreaterThanOrEqual(panelBox.x);
+  // The name scrolls away with the controls; only the bar stays put.
+  await page.locator('.appearance-scroll').evaluate(panel => panel.scrollTo(0, 400));
+  expect((await page.locator('#name-text').boundingBox()).y).toBeLessThan(nameBox.y - 100);
+  expect((await bar.boundingBox()).y).toBe(barBox.y);
+  await page.locator('.appearance-scroll').evaluate(panel => panel.scrollTo(0, 0));
   // Paper size leads the controls, under its own heading, with Quick styles next.
   expect(await page.locator('.appearance-scroll legend').allTextContents()).toEqual(
     ['Paper Size', 'Quick styles', 'Typography', 'Spacing', 'Layout', 'Colors']);
@@ -278,6 +283,10 @@ test('each quick style restyles the preview and its controls', async ({ page }) 
   await page.goto('/create/project-manager');
   await expect(page.locator('#style-presets button'))
     .toHaveText(['Classic', 'Modern', 'Compact', 'Developer', 'Designer', 'Academic', 'Executive', 'Romantic']);
+  // Every style carries its own icon.
+  const icons = await page.locator('#style-presets button i').evaluateAll(nodes => nodes.map(node => node.className));
+  expect(icons).toHaveLength(8);
+  expect(new Set(icons).size).toBe(8);
   const heading = page.frameLocator('#preview').locator('h1');
   await page.getByRole('button', { name: 'Developer', exact: true }).click();
   await expect(heading).toHaveCSS('font-family', /Courier New/);

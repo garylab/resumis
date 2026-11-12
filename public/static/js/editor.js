@@ -1,4 +1,4 @@
-import { SETTINGS, FONTS, FONT_GROUPS, PRESETS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
+import { SETTINGS, FONTS, FONT_GROUPS, PRESETS, PRESET_ICONS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
 import { fitResumePreview } from './preview.js';
 import { initPanelResizers } from './panels.js';
 
@@ -37,8 +37,11 @@ function node(tag, className, text) {
 }
 
 for (const [name, settings] of Object.entries(PRESETS)) {
-  const button = node('button', '', name);
+  const button = node('button', '');
   button.type = 'button';
+  const icon = node('i', `bi ${PRESET_ICONS[name]}`);
+  icon.setAttribute('aria-hidden', 'true');
+  button.append(icon, node('span', '', name));
   button.setAttribute('aria-pressed', 'false');
   button.addEventListener('click', () => {
     applySettings(settings);

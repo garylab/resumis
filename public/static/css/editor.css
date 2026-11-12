@@ -39,7 +39,9 @@ body.resizing-columns { cursor: col-resize; user-select: none; }
 .style-switch button { border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 8px 2px; font-size: 12px; }
 .style-switch button:hover, .style-switch button:focus-visible { background: #fff8ed; border-color: #f4ba6d; }
 .style-switch button[aria-checked="true"] { background: #fff5e7; color: #925b12; border-color: #f4ba6d; font-weight: 600; }
-.style-presets button { border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 8px 2px; font-size: 11px; }
+.style-presets button { display: flex; flex-direction: column; align-items: center; gap: 3px; border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 7px 2px; font-size: 11px; }
+.style-presets button i { font-size: 14px; line-height: 1; color: #8a8e9b; }
+.style-presets button[aria-pressed="true"] i { color: #c87810; }
 .style-presets button:hover, .style-presets button:focus-visible { background: #fff8ed; border-color: #f4ba6d; }
 .style-presets button[aria-pressed="true"] { background: #fff5e7; color: #925b12; border-color: #f4ba6d; }
 .style-field + .style-field { margin-top: 14px; }
