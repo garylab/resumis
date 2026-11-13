@@ -1,135 +1,69 @@
 ![Resumis editor with Markdown, live resume preview, photo, and style controls](public/static/img/screenshots/resumis-editor.png)
 
-<div align="center">
+# Resumis
 
-# Resumis · Cloudflare
-
-### Build Markdown resumes. Save them to your own GitHub.
-
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)
-![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white)
+Build Markdown resumes with live preview and save them to your GitHub repository. Runs on Cloudflare Workers; no database required.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/garylab/resumis)
 
-[Quick start](#quick-start) · [Features](#features) · [Deploy](#deploy) · [Development](#development)
+## Features
 
-</div>
+- Eight templates and Quick styles, visual controls, and Advanced CSS.
+- Photo upload with text wrapping, rounded-square or circle shapes.
+- A4/US Letter layouts and browser PDF export.
+- GitHub repository/branch selection, saving, renaming, duplication, and deletion.
 
----
+Each resume lives in its own repository folder as `resume.md`, `style.css`, and an optional `photo.jpg`. Visual changes appear in Advanced CSS and are saved to `style.css`.
 
-The Cloudflare Workers version of Resumis, preserving the Python app’s interface and GitHub storage. No database or Python server required.
+## Local setup
 
-## Quick start
-
-Requires **Node.js 22+** and npm.
+Requires Node.js 22+ and npm.
 
 ```sh
-cd resumis
 npm ci
 cp -n .dev.vars.example .dev.vars
 ```
 
-For local development, configure secrets and public settings in your untracked `.dev.vars` file. After copying the example, add your OAuth client ID:
+Edit `.dev.vars`, then run `npm run dev` and open **http://localhost:8988**. Register your GitHub OAuth callback as `http://localhost:8988/auth/callback`.
 
-```dotenv
-GITHUB_CLIENT_ID=your-github-oauth-client-id
-```
+## Environment variables
 
-| Variable | Type | Value |
-| --- | --- | --- |
-| `GITHUB_CLIENT_ID` | Plaintext | Required for sign-in: GitHub OAuth app client ID |
-| `GITHUB_CLIENT_SECRET` | Secret | Required for sign-in: GitHub OAuth app client secret |
-| `SESSION_SECRET` | Secret | Required for sign-in: random secret, generate with `openssl rand -hex 32` |
-| `PUBLIC_ORIGIN` | Plaintext | Optional HTTPS proxy origin, e.g. `https://dev.resumis.com` |
-| `SITE_NAME` | Plaintext | Optional site title and branding; default `Resumis` |
-| `GA_MEASUREMENT_ID` | Plaintext | Optional Google Analytics measurement ID, e.g. `G-XXXXXXXXXX`; unset, empty, or invalid disables analytics |
-| `PRIVACY_POLICY_CONTENT` | Plaintext | Optional Markdown for `/privacy-policy`; unset or empty keeps the original page |
-| `TERMS_OF_SERVICE_CONTENT` | Plaintext | Optional Markdown for `/terms-of-service`; unset or empty keeps the original page |
-| `FOOTER_CONTENT` | Plaintext | Optional Markdown appended to the footer |
+All variables are listed in [`.dev.vars.example`](.dev.vars.example). **Required means required for GitHub sign-in and saving**; editing and PDF export work without credentials.
 
-Footer: `{SITE_NAME} Powered by Resumis {FOOTER_CONTENT}`, with **SITE_NAME** linking to the current site's homepage and **Powered by Resumis** linking to https://resumis.com. Markdown supports headings, lists, and links; raw HTML is escaped. Use double-quoted `\n` for newlines in `.dev.vars`, for example:
+| Variable | Required? | Type | Description |
+| --- | --- | --- | --- |
+| `GITHUB_CLIENT_ID` | Yes | Text | GitHub OAuth app client ID |
+| `GITHUB_CLIENT_SECRET` | Yes | Secret | GitHub OAuth app client secret |
+| `SESSION_SECRET` | Yes | Secret | Random secret, at least 32 characters; generate with `openssl rand -hex 32` |
+| `SITE_NAME` | No | Text | Site name; defaults to `Resumis` |
+| `PUBLIC_ORIGIN` | No | Text | HTTPS proxy origin, e.g. `https://dev.resumis.com` |
+| `GA_MEASUREMENT_ID` | No | Text | Google Analytics ID; blank disables analytics |
+| `PRIVACY_POLICY_CONTENT` | No | Text | Privacy policy Markdown; blank keeps the default page |
+| `TERMS_OF_SERVICE_CONTENT` | No | Text | Terms of service Markdown; blank keeps the default page |
+| `FOOTER_CONTENT` | No | Text | Additional footer Markdown |
 
-```dotenv
-PRIVACY_POLICY_CONTENT="# Privacy Policy\n\nYour privacy policy."
-FOOTER_CONTENT="[Privacy](/privacy-policy) · [Terms](/terms-of-service)"
-```
-
-On Cloudflare, manage public settings under your Worker's **Settings → Variables and Secrets** as **Text**. Add `GITHUB_CLIENT_ID` for sign-in and only the optional settings you need; omitted settings use the app's defaults. `wrangler.jsonc` deliberately has no `vars` declarations and enables `keep_vars: true` so redeployments preserve existing dashboard values. Keep variables out of Wrangler configuration, including any `wrangler.toml` in your deployment repository, because explicitly declared values override dashboard settings. See [Wrangler's configuration documentation](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth).
-
-`.dev.vars.example` lists only the two secrets needed for sign-in. The editor and PDF export work without any credentials; the deployment button prompts for credentials to enable GitHub saving.
-
-```sh
-npm run dev
-```
-
-The build compiles Tailwind utilities from `styles/tailwind.css`, templates, and browser JavaScript, and generates a local SVG sprite from Lucide. Bootstrap is not required. Generated CSS and icons are ignored by Git and rebuilt by `npm run build` or `npm run dev`.
-
-Open **http://localhost:8988**. Port **8988** is fixed in `wrangler.jsonc`.
-
-Register your GitHub OAuth callback as `<your-origin>/auth/callback`:
-
-- Local: `http://localhost:8988/auth/callback`
-- HTTPS proxy: `https://dev.resumis.com/auth/callback` with `PUBLIC_ORIGIN=https://dev.resumis.com`
-
-Start sign-in from that same origin. The editor and PDF export work without signing in; saving requires GitHub.
-
-## Features
-
-- Eight resume templates, Markdown editing, and live preview.
-- Visual appearance controls for fonts, sizes, line height, margins, colors, heading alignment, list columns, and A4/US Letter paper. Choose Classic, Modern, or Compact presets, or adjust individual controls. Advanced CSS is available for extra customization.
-- Appearance changes are saved as CSS variables in the same `style.css` file as your resume, and apply to preview and PDF export. Existing custom CSS is preserved; **Reset visual adjustments** removes only changes made by the visual controls.
-- PDF export through the browser’s **Save as PDF** option.
-- GitHub sign-in, repository/branch selection, and resume creation, editing, renaming, duplication, and deletion.
-- The last saved repository and branch are remembered in this browser for 31 days, including after logout or browser restart. On sign-in with the same GitHub account, the app restores them if the branch is still accessible. The encrypted preference cookie contains no GitHub token; clearing site cookies forgets the selection.
-- Files stay in your repository as `<resume name>/resume.md` and `style.css`. An optional photo is saved beside them in `photo.jpg`; it follows renames and duplicates and is deleted when removed and saved.
-- Upload a JPG, PNG, or WebP photo (up to 10 MB) in the editor’s **Photo** section. The browser crops it to a 400 × 400 JPEG before saving. Uploading inserts `![Profile photo](photo.jpg)` at the top of the Markdown. Move that line to position the photo in the preview and PDF; use **Replace photo** or **Remove photo** to change it, then **Save** to persist the change.
-- Quick styles also format a photo at the top of the Markdown: Classic and Romantic center it, Designer puts it on the left, and the other presets put it on the right. Photo size, corners, and spacing are saved in the resume CSS and apply to PDF export. Moving the photo elsewhere in Markdown preserves that placement.
-- **Layout → Photo alignment** lets you override the preset: left or right wraps the following text beside the image; centered keeps the photo on its own row. The setting applies to preview and PDF and is saved with the resume.
-- The **Square / Circle** switcher in the Photo section selects a rounded square or circle. It is stored as `--photo-shape-radius` in Advanced CSS and the saved `style.css`, and applies to PDF export.
-
-Existing GitHub resumes work unchanged. Sign in again when switching from Flask.
+For multiline Markdown, use double-quoted `\n` escapes, e.g. `FOOTER_CONTENT="[Privacy](/privacy-policy)\n\nMade with Resumis"`. With an HTTPS proxy, set `PUBLIC_ORIGIN` and use that same origin for sign-in and the `/auth/callback` URL.
 
 ## Deploy
 
-Use the **Deploy to Cloudflare** button above, then configure `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and a random `SESSION_SECRET` for your Worker. See [Cloudflare's deploy button documentation](https://developers.cloudflare.com/workers/platform/deploy-buttons/) for the setup flow.
-
-For manual deployment, authenticate and configure the two production secrets from the repository root:
+Use the Cloudflare button above, or run:
 
 ```sh
 npx wrangler login
-npx wrangler secret put GITHUB_CLIENT_SECRET
-npx wrangler secret put SESSION_SECRET
 npm run deploy
 ```
 
-Wrangler may offer to create the Worker when setting the first secret. Once the Worker exists, add `GITHUB_CLIENT_ID` and any optional public settings in its **Settings → Variables and Secrets** as **Text**, then save/deploy those settings. Register the production OAuth callback as `https://<your-host>/auth/callback`.
+Configure production values in your Worker's **Settings → Variables and Secrets**, using the types above. `.dev.vars` is local only. Set the OAuth callback to `https://<your-host>/auth/callback`. For Git builds, use the repository root and deploy command `npm run deploy`.
 
-For Cloudflare Git builds, use the **repository root** and deploy command **`npm run deploy`**. Attach a custom domain in Cloudflare if needed.
-
-If you deployed an earlier version that classified all settings as secrets, save your public setting values and replace their secret entries with **Text** entries under your Worker's **Settings → Variables and Secrets**. Keep `GITHUB_CLIENT_SECRET` and `SESSION_SECRET` as secrets. Also remove any `vars` declarations from your deployment repository's Wrangler configuration and retain `keep_vars: true`. Updating this template does not automatically reclassify an existing Worker's bindings or recover values that were already overwritten.
+Keep `keep_vars: true` and leave `vars` out of Wrangler configuration to preserve dashboard settings.
 
 ## Development
 
 ```sh
-npm test                         # Backend and GitHub contract tests
+npm test                         # Build and unit tests
 npm run check                    # Deployment dry run
 npx playwright install chromium
-npm run test:browser              # Browser checks in local Wrangler
+npm run test:browser              # Browser tests with mocked GitHub
 ```
 
-Tests mock GitHub; real sign-in requires your OAuth app. Health endpoint: `/health`.
-
-<details>
-<summary>Updating templates and checking Python parity</summary>
-
-Edit `templates/` for pages, `public/static/` for assets, and `data/resumes/` for built-in resumes. Every build converts resume Markdown directly to HTML with JavaScript (`markdown-it`); no Python or preview snapshots are required:
-
-```sh
-npm run build
-```
-
-The build also downloads the resume typefaces from Google Fonts into `public/static/fonts/` (ignored by Git, like `src/generated/`) and writes `fonts.css` for resume previews and `ui.css` for the site itself, so neither pages nor resumes request anything from Google at runtime. Files already downloaded are reused, and a build without network keeps the ones it has. Add a family in `scripts/fonts.mjs` and list it in `FONTS` in `public/static/js/style-settings.js` to offer it in the editor.
-
-The optional `npm run test:parity` check requires the parent Python project and `uv`. It compares four rendered pages against the original templates, excluding the redesigned editor, isolated template previews, customized footer, and configurable analytics; it is not used for Markdown conversion, builds, or deployment.
-
-</details>
+Edit `templates/`, `public/static/`, and `styles/` for the UI; `data/resumes/` for built-in resumes. The build generates Tailwind CSS, Lucide icons, and local font assets. Health endpoint: `/health`.

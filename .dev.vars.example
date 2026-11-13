@@ -1,7 +1,15 @@
-# Only secrets belong in this example: Cloudflare uses it to discover secret bindings.
-# These two secrets are required for GitHub sign-in and saving resumes.
+# Required for GitHub sign-in and saving (the editor works without them).
+GITHUB_CLIENT_ID=your-github-oauth-client-id
 GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
+# Generate with: openssl rand -hex 32
 SESSION_SECRET=replace-with-a-random-secret-of-at-least-32-characters
-# Configure production public settings in the Cloudflare dashboard.
-# For local development, add GITHUB_CLIENT_ID and any optional public settings
-# to your untracked .dev.vars file (see README.md).
+
+# Optional settings. Leave blank to use defaults or disable the feature.
+SITE_NAME=Resumis
+PUBLIC_ORIGIN=
+GA_MEASUREMENT_ID=
+
+# Markdown content; use double-quoted strings with \n for line breaks.
+PRIVACY_POLICY_CONTENT=
+TERMS_OF_SERVICE_CONTENT=
+FOOTER_CONTENT=
