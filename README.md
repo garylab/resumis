@@ -1,6 +1,7 @@
+<div align="center">
+
 # Resumis
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/workers/)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![npm](https://img.shields.io/badge/npm-install-CB3837?logo=npm&logoColor=white)](#local-setup)
@@ -11,10 +12,13 @@
 [![GitHub issues](https://img.shields.io/github/issues/garylab/resumis)](https://github.com/garylab/resumis/issues)
 [![Last commit](https://img.shields.io/github/last-commit/garylab/resumis)](https://github.com/garylab/resumis/commits/main/)
 [![JavaScript](https://img.shields.io/github/languages/top/garylab/resumis)](https://github.com/garylab/resumis)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/garylab/resumis)
 
 [Features](#features) · [Local setup](#local-setup) · [Environment variables](#environment-variables) · [Deploy](#deploy) · [Development](#development)
+
+</div>
 
 ![Resumis editor with Markdown, live resume preview, photo, and style controls](public/static/img/screenshots/resumis-editor.png)
 
