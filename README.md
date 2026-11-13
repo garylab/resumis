@@ -1,10 +1,24 @@
-![Resumis editor with Markdown, live resume preview, photo, and style controls](public/static/img/screenshots/resumis-editor.png)
-
 # Resumis
 
-Build Markdown resumes with live preview and save them to your GitHub repository. Runs on Cloudflare Workers; no database required.
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/workers/)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![npm](https://img.shields.io/badge/npm-install-CB3837?logo=npm&logoColor=white)](#local-setup)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Lucide icons](https://img.shields.io/badge/Icons-Lucide-F56565?logo=lucide&logoColor=white)](https://lucide.dev/)
+[![GitHub stars](https://img.shields.io/github/stars/garylab/resumis?style=flat)](https://github.com/garylab/resumis/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/garylab/resumis?style=flat)](https://github.com/garylab/resumis/forks)
+[![GitHub issues](https://img.shields.io/github/issues/garylab/resumis)](https://github.com/garylab/resumis/issues)
+[![Last commit](https://img.shields.io/github/last-commit/garylab/resumis)](https://github.com/garylab/resumis/commits/main/)
+[![JavaScript](https://img.shields.io/github/languages/top/garylab/resumis)](https://github.com/garylab/resumis)
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/garylab/resumis)
+
+[Features](#features) · [Local setup](#local-setup) · [Environment variables](#environment-variables) · [Deploy](#deploy) · [Development](#development)
+
+![Resumis editor with Markdown, live resume preview, photo, and style controls](public/static/img/screenshots/resumis-editor.png)
+
+Build Markdown resumes with live preview and save them to your GitHub repository. Runs on Cloudflare Workers; no database required.
 
 ## Features
 
@@ -32,8 +46,8 @@ All variables are listed in [`.dev.vars.example`](.dev.vars.example). **Required
 
 | Variable | Required? | Type | Description |
 | --- | --- | --- | --- |
-| `GITHUB_CLIENT_ID` | Yes | Text | GitHub OAuth app client ID |
-| `GITHUB_CLIENT_SECRET` | Yes | Secret | GitHub OAuth app client secret |
+| `GITHUB_CLIENT_ID` | Yes | Text | [Create an OAuth app](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app), then copy its Client ID |
+| `GITHUB_CLIENT_SECRET` | Yes | Secret | [Open your OAuth app settings](https://github.com/settings/developers) and select **Generate a new client secret** ([authentication guide](https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api)) |
 | `SESSION_SECRET` | Yes | Secret | Random secret, at least 32 characters; generate with `openssl rand -hex 32` |
 | `SITE_NAME` | No | Text | Site name; defaults to `Resumis` |
 | `PUBLIC_ORIGIN` | No | Text | HTTPS proxy origin, e.g. `https://dev.resumis.com` |
