@@ -1,3 +1,5 @@
+![Resumis editor with Markdown, live resume preview, photo, and style controls](public/static/img/screenshots/resumis-editor.png)
+
 <div align="center">
 
 # Resumis · Cloudflare
@@ -60,6 +62,8 @@ On Cloudflare, manage public settings under your Worker's **Settings → Variabl
 npm run dev
 ```
 
+The build compiles Tailwind utilities from `styles/tailwind.css`, templates, and browser JavaScript, and generates a local SVG sprite from Lucide. Bootstrap is not required. Generated CSS and icons are ignored by Git and rebuilt by `npm run build` or `npm run dev`.
+
 Open **http://localhost:8988**. Port **8988** is fixed in `wrangler.jsonc`.
 
 Register your GitHub OAuth callback as `<your-origin>/auth/callback`:
@@ -77,7 +81,11 @@ Start sign-in from that same origin. The editor and PDF export work without sign
 - PDF export through the browser’s **Save as PDF** option.
 - GitHub sign-in, repository/branch selection, and resume creation, editing, renaming, duplication, and deletion.
 - The last saved repository and branch are remembered in this browser for 31 days, including after logout or browser restart. On sign-in with the same GitHub account, the app restores them if the branch is still accessible. The encrypted preference cookie contains no GitHub token; clearing site cookies forgets the selection.
-- Files stay in your repository as `<resume name>/resume.md` and `style.css`.
+- Files stay in your repository as `<resume name>/resume.md` and `style.css`. An optional photo is saved beside them in `photo.jpg`; it follows renames and duplicates and is deleted when removed and saved.
+- Upload a JPG, PNG, or WebP photo (up to 10 MB) in the editor’s **Photo** section. The browser crops it to a 400 × 400 JPEG before saving. Uploading inserts `![Profile photo](photo.jpg)` at the top of the Markdown. Move that line to position the photo in the preview and PDF; use **Replace photo** or **Remove photo** to change it, then **Save** to persist the change.
+- Quick styles also format a photo at the top of the Markdown: Classic and Romantic center it, Designer puts it on the left, and the other presets put it on the right. Photo size, corners, and spacing are saved in the resume CSS and apply to PDF export. Moving the photo elsewhere in Markdown preserves that placement.
+- **Layout → Photo alignment** lets you override the preset: left or right wraps the following text beside the image; centered keeps the photo on its own row. The setting applies to preview and PDF and is saved with the resume.
+- The **Square / Circle** switcher in the Photo section selects a rounded square or circle. It is stored as `--photo-shape-radius` in Advanced CSS and the saved `style.css`, and applies to PDF export.
 
 Existing GitHub resumes work unchanged. Sign in again when switching from Flask.
 

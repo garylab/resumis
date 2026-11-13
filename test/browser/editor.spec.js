@@ -22,7 +22,7 @@ test('Workers runtime serves home, templates, assets, and policy pages', async (
   }
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Resume Templates', exact: true })).toBeVisible();
-  await expect(page.locator('.card')).toHaveCount(8);
+  await expect(page.locator('.template-card')).toHaveCount(8);
   await expect(page.locator('footer')).toContainText('Resumis');
   await expect(page.locator('footer a[href="/"]')).toHaveText('Resumis');
   await expect(page.locator('footer a[href="https://resumis.com"]')).toHaveText('Resumis');
@@ -132,7 +132,7 @@ test('visual controls update the preview, print styles, and saved CSS without lo
 test('the editor fills the screen without the site navbar, footer, or panel chrome', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/create/project-manager');
-  await expect(page.locator('nav.navbar')).toHaveCount(0);
+  await expect(page.locator('nav')).toHaveCount(0);
   await expect(page.locator('footer')).toHaveCount(0);
   // The Markdown and preview panels are bare: no headings, hints, or status note.
   await expect(page.locator('.panel-heading, .preview-note')).toHaveCount(0);
@@ -172,9 +172,9 @@ test('the right bar holds navigation, saving, and the resume name field', async 
   expect((await page.locator('#name-text').boundingBox()).y).toBeLessThan(nameBox.y - 100);
   expect((await bar.boundingBox()).y).toBe(barBox.y);
   await page.locator('.appearance-scroll').evaluate(panel => panel.scrollTo(0, 0));
-  // Paper size leads the controls, under its own heading, with Quick styles next.
+  // Paper size leads the controls, under its own heading, with Photo before Quick styles.
   expect(await page.locator('.appearance-scroll legend').allTextContents()).toEqual(
-    ['Paper Size', 'Quick styles', 'Typography', 'Spacing', 'Layout', 'Colors']);
+    ['Paper Size', 'Photo', 'Quick styles', 'Typography', 'Spacing', 'Layout', 'Colors']);
   await expect(page.locator('#paper-section')).toContainText('Paper Size');
   await page.locator('#name-text').click();
   await expect(page.locator('#name-input')).toHaveJSProperty('tagName', 'TEXTAREA');
@@ -284,7 +284,7 @@ test('each quick style restyles the preview and its controls', async ({ page }) 
   await expect(page.locator('#style-presets button'))
     .toHaveText(['Classic', 'Modern', 'Compact', 'Developer', 'Designer', 'Academic', 'Executive', 'Romantic']);
   // Every style carries its own icon.
-  const icons = await page.locator('#style-presets button i').evaluateAll(nodes => nodes.map(node => node.className));
+  const icons = await page.locator('#style-presets button svg use').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
   expect(icons).toHaveLength(8);
   expect(new Set(icons).size).toBe(8);
   const heading = page.frameLocator('#preview').locator('h1');
@@ -426,4 +426,264 @@ test('template previews fit mobile screens while retaining paper dimensions and 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(await frame.locator('body').evaluate(body => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
   await page.screenshot({ path: '/tmp/resumis-template-mobile.png', fullPage: true });
+});
+
+test('mobile navigation and notifications work without Bootstrap', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const externalUI = [];
+  page.on('request', request => {
+    if (/bootstrap|lucide|tailwind/.test(request.url()) && !request.url().startsWith('http://127.0.0.1:8788/')) externalUI.push(request.url());
+  });
+  await page.goto('/');
+  const toggle = page.getByRole('button', { name: 'Toggle navigation' });
+  await expect(page.locator('#navbarNav')).toBeHidden();
+  await toggle.click();
+  await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#navbarNav')).toBeHidden();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
+  await expect(toggle).toBeHidden();
+  await page.goto('/create/project-manager');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.locator('#toast-container')).toBeVisible();
+  await expect(page.locator('#toast-text')).toHaveText('Please login to continue');
+  await page.getByRole('button', { name: 'Close notification' }).click();
+  await expect(page.locator('#toast-container')).toBeHidden();
+  expect(externalUI).toEqual([]);
+  await expect(page.locator('#style-font optgroup, #style-headingFont optgroup')).toHaveCount(0);
+  const icons = await page.locator('#style-presets button').evaluateAll(buttons => buttons.map(button => {
+    const icon = button.querySelector('svg').getBoundingClientRect();
+    const text = button.querySelector('span').getBoundingClientRect();
+    return icon.width > 0 && icon.right <= text.left && Math.abs(icon.y + icon.height / 2 - text.y - text.height / 2) < 2;
+  }));
+  expect(icons.every(Boolean)).toBe(true);
+});
+
+test('account and delete disclosures support keyboard and outside dismissal', async ({ page }) => {
+  const mock = githubMock();
+  mock.put('Example/content.md', '# Example');
+  mock.put('Example/style.css', 'body { color: black; }');
+  const app = createApp(mock.fetcher);
+  const env = { SESSION_SECRET: 'test-session-secret-at-least-32-characters' };
+  const session = await sealSession({ user: { id: 123, name: 'Gary', token: 'test-github-token' }, repo: { full_name: 'gary/resumes', branch: 'feature/resumes & css' } }, env.SESSION_SECRET);
+  await page.route('**/my-resumes', async route => {
+    const response = await app.fetch(new Request(route.request().url(), { headers: { Cookie: `resumis_session=${session}` } }), env);
+    await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: await response.text() });
+  });
+  await page.goto('/my-resumes');
+  const account = page.locator('nav summary');
+  await account.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('link', { name: 'Logout' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('link', { name: 'Logout' })).toBeHidden();
+  await expect(account).toBeFocused();
+  const remove = page.getByLabel('Delete resume').first();
+  await remove.click();
+  await expect(page.getByRole('button', { name: 'Confirm' }).first()).toBeVisible();
+  await page.getByRole('heading', { name: 'My Resumes' }).click();
+  await expect(page.getByRole('button', { name: 'Confirm' }).first()).toBeHidden();
+});
+
+test('photo uploads persist through edits, saving and reopening, and print with the resume', async ({ page }) => {
+  const mock = githubMock();
+  const app = createApp(mock.fetcher);
+  const env = { SESSION_SECRET: 'test-session-secret-at-least-32-characters' };
+  const session = await sealSession({ user: { id: 123, name: 'Gary', token: 'test-github-token' }, repo: { full_name: 'gary/resumes', branch: 'feature/resumes & css' } }, env.SESSION_SECRET);
+  await page.route('**/resume/**', async route => {
+    const incoming = route.request();
+    const response = await app.fetch(new Request(incoming.url(), {
+      method: incoming.method(), headers: { ...incoming.headers(), Cookie: `resumis_session=${session}` },
+      body: incoming.postDataBuffer() || undefined,
+    }), env);
+    await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: await response.text() });
+  });
+  await page.goto('/create/project-manager');
+  await page.locator('#photo-file').setInputFiles('test/fixtures/photo.jpg');
+  await expect(page.locator('#photo-status')).toContainText('Photo added');
+  const portrait = page.frameLocator('#preview').locator('[data-resume-photo]');
+  await expect(portrait).toBeVisible();
+  const firstPhoto = await page.locator('#photo-data').inputValue();
+  expect(await page.locator('[name=content]').inputValue()).toMatch(/^!\[Profile photo\]\(photo\.jpg\)\n\n/);
+  await expect(page.frameLocator('#preview').locator('body > :first-child img')).toHaveAttribute('src', firstPhoto);
+  await expect(portrait).toHaveJSProperty('naturalWidth', 400);
+  await page.getByRole('button', { name: 'Modern', exact: true }).click();
+  await page.evaluate(() => document.querySelector('.markdown-panel .CodeMirror').CodeMirror.setValue('# Photo Test\n\n![Profile photo](photo.jpg)\n\nMy experience'));
+  await expect(portrait).toHaveAttribute('src', firstPhoto);
+  await expect(page.frameLocator('#preview').locator('body > :first-child')).toHaveText('Photo Test');
+  await page.locator('#photo-file').setInputFiles({ name: 'bad.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('not an image') });
+  await expect(page.locator('#photo-status')).toContainText('could not be opened');
+  await expect(portrait).toHaveAttribute('src', firstPhoto);
+  await page.locator('#photo-file').setInputFiles('public/static/img/favicon.png');
+  await expect(page.locator('#photo-status')).toContainText('Photo added');
+  await page.getByLabel('Photo alignment', {exact:true}).selectOption('left');
+  await page.getByRole('radio', {name:'Circle', exact:true}).click();
+  const cssEditor = page.locator('#advanced-css .CodeMirror');
+  await page.locator('#advanced-css summary').click();
+  await expect(cssEditor).toBeVisible();
+  const photoCss = await cssEditor.evaluate(el => el.CodeMirror.getValue());
+  expect(photoCss).toContain('--photo-position: left;');
+  expect(photoCss).toContain('--photo-shape-radius: 50%;');
+  expect(photoCss).toContain('float: var(--photo-position, none);');
+  expect(photoCss).toContain('object-fit: cover;');
+  await expect(portrait).not.toHaveAttribute('style');
+  const savedPhoto = await page.locator('#photo-data').inputValue();
+  expect(savedPhoto).not.toBe(firstPhoto);
+  expect(await page.locator('[name=content]').inputValue()).toMatch(/^# Photo Test/);
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.waitForURL('**/resume/edit/**');
+  expect(`data:image/jpeg;base64,${mock.files.get('Project Manager/photo.jpg').content.toString('base64')}`).toBe(savedPhoto);
+  expect(mock.files.get('Project Manager/style.css').content.replaceAll('\r\n', '\n')).toBe(photoCss);
+  await expect(portrait).toHaveAttribute('src', savedPhoto);
+  await expect(page.getByLabel('Photo alignment', {exact:true})).toHaveValue('left');
+  await expect(portrait.locator('..')).toHaveCSS('float', 'left');
+  await expect(page.getByRole('radio', {name:'Circle', exact:true})).toHaveAttribute('aria-checked', 'true');
+  await expect(portrait).toHaveCSS('border-radius', '50%');
+  await page.evaluate(() => {
+    window.printedPhoto = false;
+    const frame = document.querySelector('#preview');
+    frame.contentWindow.print = () => { window.printedPhoto = frame.contentDocument.querySelector('[data-resume-photo]').naturalWidth === 400; };
+  });
+  await page.getByRole('button', { name: /PDF$/ }).click();
+  await expect.poll(() => page.evaluate(() => window.printedPhoto)).toBe(true);
+  await page.emulateMedia({ media: 'print' });
+  await expect(portrait).toBeVisible();
+  await page.emulateMedia({ media: 'screen' });
+  await page.getByRole('button', { name: 'Remove photo', exact: true }).click();
+  await expect(portrait).toHaveCount(0);
+  const saved = page.waitForResponse(response => response.url().endsWith('/resume/save'));
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await saved;
+  expect(mock.files.has('Project Manager/photo.jpg')).toBe(false);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Upload', exact: true })).toBeVisible();
+  await expect(portrait).toHaveCount(0);
+});
+
+test('preview strips executable HTML without sandbox warnings or changing saved Markdown', async ({ page }) => {
+  const warnings = [];
+  page.on('console', message => {
+    if (message.text().includes('Blocked script execution')) warnings.push(message.text());
+  });
+  await page.goto('/create/senior-backend-engineer');
+  await page.locator('.CodeMirror').first().waitFor();
+  const markdown = '# Resume\n\n<strong>Formatted text</strong>\n\n'
+    + '<img src="/static/img/favicon.png" onload="parent.previewScriptRan=true" alt="Example">\n'
+    + '<script>parent.previewScriptRan=true</script>\n'
+    + '<iframe srcdoc="<script>parent.previewScriptRan=true</script>"></iframe>\n'
+    + '<a href="javascript:parent.previewScriptRan=true">Unsafe link</a>\n\n'
+    + '[Website](https://example.com)';
+  await page.evaluate(content => document.querySelector('.CodeMirror').CodeMirror.setValue(content), markdown);
+  const frame = page.frameLocator('#preview');
+  await expect(frame.locator('strong')).toHaveText('Formatted text');
+  await expect(frame.getByAltText('Example')).toHaveJSProperty('complete', true);
+  await expect(frame.locator('script, iframe, [onload]')).toHaveCount(0);
+  await expect(frame.getByText('Unsafe link')).not.toHaveAttribute('href');
+  await expect(frame.getByRole('link', { name: 'Website' })).toHaveAttribute('href', 'https://example.com');
+  await expect(page.locator('#preview')).toHaveAttribute('sandbox', 'allow-same-origin allow-modals');
+  expect(await page.evaluate(() => window.previewScriptRan)).toBeUndefined();
+  await expect(page.locator('[name=content]')).toHaveValue(markdown);
+  expect(warnings).toEqual([]);
+});
+
+test('quick styles lay out a header photo without overlapping resume text', async ({ page }) => {
+  await page.goto('/create/project-manager');
+  await page.locator('#photo-file').setInputFiles('test/fixtures/photo.jpg');
+  await expect(page.locator('#photo-status')).toContainText('Photo added');
+  const markdown = await page.locator('[name=content]').inputValue();
+  const layouts = { Classic: ['none', 26, 2], Modern: ['right', 28, 3], Compact: ['right', 22, 2],
+    Developer: ['right', 26, 2], Designer: ['left', 30, 15], Academic: ['right', 24, 0],
+    Executive: ['right', 28, 2], Romantic: ['none', 28, 14] };
+  for (const [name, [position, size, radius]] of Object.entries(layouts)) {
+    await page.getByRole('button', { name, exact: true }).click();
+    for (const media of ['screen', 'print']) {
+      await page.emulateMedia({ media });
+      const geometry = await page.locator('#preview').evaluate(frame => {
+        const doc = frame.contentDocument;
+        const win = frame.contentWindow;
+        const image = doc.querySelector('[data-resume-photo]');
+        const rect = image.getBoundingClientRect();
+        const heading = doc.querySelector('h1').getBoundingClientRect();
+        const section = doc.querySelector('h2').getBoundingClientRect();
+        const body = doc.body.getBoundingClientRect();
+        const style = win.getComputedStyle(doc.body);
+        const left = body.left + parseFloat(style.paddingLeft);
+        const right = body.right - parseFloat(style.paddingRight);
+        return { position: win.getComputedStyle(image.parentElement).float, width: parseFloat(win.getComputedStyle(image).width),
+          radius: win.getComputedStyle(image).borderRadius, left: rect.left - left, right: right - rect.right,
+          centered: Math.abs((rect.left + rect.right) / 2 - (left + right) / 2),
+          overlaps: !(rect.right <= heading.left + 1 || rect.left >= heading.right - 1 || rect.bottom <= heading.top + 1 || rect.top >= heading.bottom - 1),
+          sectionBelow: section.top >= rect.bottom - 1 };
+      });
+      expect(geometry.position, `${name} ${media}`).toBe(position);
+      expect(Math.abs(geometry.width - size * 96 / 25.4)).toBeLessThan(1);
+      if (['Designer', 'Romantic'].includes(name)) expect(geometry.radius).toBe('50%');
+      else expect(Math.abs(parseFloat(geometry.radius) - 2 * 96 / 25.4)).toBeLessThan(.01);
+      expect(geometry.overlaps, `${name} ${media}`).toBe(false);
+      expect(geometry.sectionBelow, `${name} ${media}`).toBe(true);
+      expect(position === 'none' ? geometry.centered : geometry[position]).toBeLessThan(1);
+    }
+    await page.emulateMedia({ media: 'screen' });
+    await expect(page.locator('[name=content]')).toHaveValue(markdown);
+  }
+  await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.setValue('# Name\n\nSome contact details\n\n![Profile photo](photo.jpg)\n\n## Experience'));
+  await page.getByRole('button', { name: 'Designer', exact: true }).click();
+  await expect(page.frameLocator('#preview').locator('[data-resume-photo]').locator('..')).toHaveCSS('float', 'left');
+  await expect(page.frameLocator('#preview').locator('body > :first-child')).toHaveText('Name');
+  await page.getByRole('button', { name: 'Remove photo', exact: true }).click();
+  await expect(page.frameLocator('#preview').locator('[data-resume-photo]')).toHaveCount(0);
+});
+
+test('photo position wraps following text on either side without moving Markdown', async ({ page }) => {
+  await page.goto('/create/project-manager');
+  await expect(page.getByLabel('Photo alignment', { exact: true })).toBeVisible();
+  await page.locator('#photo-file').setInputFiles('test/fixtures/photo.jpg');
+  await expect(page.locator('#photo-status')).toContainText('Photo added');
+  const markdown = '# Name\n\n## About me\n\n![Profile photo](photo.jpg)\n\n' + 'A paragraph of professional experience and skills. '.repeat(40);
+  await page.evaluate(markdown => document.querySelector('.CodeMirror').CodeMirror.setValue(markdown), markdown);
+  for (const position of ['left', 'right', 'none']) {
+    await page.getByLabel('Photo alignment', { exact: true }).selectOption(position);
+    for (const media of ['screen', 'print']) {
+      await page.emulateMedia({media});
+      const flow = await page.locator('#preview').evaluate(frame => {
+        const doc = frame.contentDocument;
+        const image = doc.querySelector('[data-resume-photo]');
+        const rect = image.getBoundingClientRect();
+        const paragraph = image.parentElement.nextElementSibling;
+        const range = doc.createRange();
+        range.setStart(paragraph.firstChild, 0);
+        range.setEnd(paragraph.firstChild, 1);
+        const firstLetter = range.getBoundingClientRect();
+        return { left: firstLetter.left >= rect.right, right: firstLetter.right <= rect.left,
+          beside: firstLetter.top < rect.bottom, below: firstLetter.top >= rect.bottom };
+      });
+      if (position === 'none') expect(flow.below).toBe(true);
+      else { expect(flow[position]).toBe(true); expect(flow.beside).toBe(true); }
+    }
+    await page.emulateMedia({media:'screen'});
+    await expect(page.locator('[name=content]')).toHaveValue(markdown);
+  }
+  await page.getByRole('button', {name:'Remove photo',exact:true}).click();
+  await expect(page.getByLabel('Photo alignment', {exact:true})).toBeVisible();
+});
+
+test('photo shape switches between square and circle in preview and print', async ({ page }) => {
+  await page.goto('/create/project-manager');
+  await page.getByRole('radio', {name:'Circle', exact:true}).click();
+  await page.locator('#photo-file').setInputFiles('test/fixtures/photo.jpg');
+  await expect(page.locator('#photo-status')).toContainText('Photo added');
+  const portrait = page.frameLocator('#preview').locator('[data-resume-photo]');
+  for (const [shape, radius] of [['Circle', '50%'], ['Square', '7.55906px']]) {
+    await page.getByRole('radio', {name:shape, exact:true}).click();
+    await expect(portrait).toHaveCSS('border-radius', radius);
+    await page.emulateMedia({media:'print'});
+    await expect(portrait).toHaveCSS('border-radius', radius);
+    await page.emulateMedia({media:'screen'});
+  }
+  await page.getByRole('button', {name:'Designer',exact:true}).click();
+  await expect(page.getByRole('radio', {name:'Circle', exact:true})).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('button', {name:'Classic',exact:true}).click();
+  await expect(page.getByRole('radio', {name:'Square', exact:true})).toHaveAttribute('aria-checked', 'true');
 });

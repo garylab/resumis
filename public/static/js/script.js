@@ -1,40 +1,49 @@
-/**
- * Tooltips
- */
-function initTooltips() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    return tooltipTriggerList.map( (tooltipTriggerEl) =>  new bootstrap.Tooltip(tooltipTriggerEl));
+let toastTimer;
+
+function initUI() {
+    const toggle = document.querySelector('[data-nav-toggle]');
+    toggle?.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(expanded));
+        document.getElementById(toggle.getAttribute('aria-controls')).classList.toggle('hidden', !expanded);
+    });
+    document.addEventListener('click', event => {
+        document.querySelectorAll('[data-disclosure][open]').forEach(menu => {
+            if (!menu.contains(event.target)) menu.open = false;
+        });
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll('[data-disclosure][open]').forEach(menu => {
+            menu.open = false;
+            menu.querySelector('summary').focus();
+        });
+        if (toggle?.getAttribute('aria-expanded') === 'true') {
+            toggle.click();
+            toggle.focus();
+        }
+    });
+    document.querySelector('[data-dismiss-toast]')?.addEventListener('click', () => {
+        clearTimeout(toastTimer);
+        document.getElementById('toast-container').classList.add('hidden');
+    });
+    document.querySelectorAll('[data-flash]').forEach(flash => {
+        flash.querySelector('[data-dismiss-flash]').addEventListener('click', () => flash.remove());
+        setTimeout(() => flash.remove(), 5000);
+    });
 }
 
-/**
- * Toast
- */
-function initToasts() {
-    var toastElList = document.querySelectorAll('.toast');
-    return [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, {}));
+function showToast(text, error = false) {
+    const toast = document.getElementById('toast-container');
+    clearTimeout(toastTimer);
+    toast.classList.remove('hidden', 'bg-red-700', 'bg-green-700');
+    toast.classList.add(error ? 'bg-red-700' : 'bg-green-700');
+    document.getElementById('toast-text').textContent = text;
+    toastTimer = setTimeout(() => toast.classList.add('hidden'), 5000);
 }
 
-function showToast(text, bgColor) {
-    const toastContentEl = document.getElementById("toast-text");
-
-    const toastContainerEl = document.getElementById("toast-container");
-    const toast = bootstrap.Toast.getOrCreateInstance(toastContainerEl);
-
-    toastContainerEl.classList.remove("text-bg-primary", "text-bg-danger");
-    toastContainerEl.classList.add("text-bg-" + bgColor);
-
-    toastContentEl.textContent = text;
-    toast.show();
-}
-
-function errorToast(text) {
-    showToast(text, "danger");
-}
-
-function successToast(text) {
-    showToast(text, "success");
-}
-
+function errorToast(text) { showToast(text, true); }
+function successToast(text) { showToast(text); }
 
 /**
  * Forms

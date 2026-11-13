@@ -1,24 +1,31 @@
+@layer components {
 html {font-family: Poppins, sans-serif;}
 body {font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji}
 html, body {height: 100%; }
 body {display: flex; flex-direction: column;}
-.fw-600 {font-weight: 600;}
 a {text-decoration: none; color: rgba(31,41,55);}
 .content {flex: 1;}
+.home-hero {
+    min-height: 450px;
+    background-color: #fff2e1;
+    background-image: linear-gradient(110deg, rgb(255 248 238 / .94), rgb(255 248 238 / .84)), url('/static/img/screenshots/resumis-editor.png');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+.home-hero h1 {font-size: clamp(2rem, 3.5vw, 3rem);}
+
 .footer-content a {color: inherit; text-decoration: underline;}
 .footer-content > :last-child {margin-bottom: 0;}
 .footer-content, .policy-content {overflow-wrap: anywhere; min-width: 0;}
 .footer-content img, .policy-content img {max-width: 100%;}
 .footer-content pre, .policy-content pre {overflow-x: auto; text-align: left;}
-.container{max-width: 960px;}
-.bg-primary{background-color: #fff2e1!important;}
 .bg-yellow-500 {background-color: #F48C06;}
-.bg-darken{background-color: rgb(37, 38, 65);}
 .text-yellow-500 {color: #f48c06;}
 .text-darken {color: #2f327d;}
-.btn-yellow,.btn-yellow:hover {background-color: #f48c06; color: #fff; border-radius: 9999px;
+.action-accent,.action-accent:hover {background-color: #f48c06; color: #fff; border-radius: 9999px;
     padding-left: 1.5rem;padding-right: 1.5rem; font-size: .875rem;}
-.btn-outline-yellow, .btn-outline-yellow:hover {color: #f48c06; border-color: #f48c06; border-radius: 9999px;
+.action-outline, .action-outline:hover {color: #f48c06; border-color: #f48c06; border-radius: 9999px;
     padding-left: 1.5rem;padding-right: 1.5rem; font-size: .875rem;}
 h1 {font-size: 1.25rem;}
 h2 {font-size: 1.125rem;}
@@ -45,9 +52,9 @@ h3, h4, h5 {font-size: 1rem;}
 
 /*CodeMirror*/
 .CodeMirror {
-    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
+    border: 1px solid #dee2e6 !important;
     border-top: none !important;
-    border-radius: var(--bs-border-radius);
+    border-radius: 6px;
     border-top-left-radius: unset;
     border-top-right-radius: unset;
     font-size: 0.875rem;
@@ -59,28 +66,10 @@ h3, h4, h5 {font-size: 1rem;}
 }
 
 #name-input {
-    display: inline-block;
     width: auto;
     min-width: 200px; /* Minimum width to keep the input visible when empty */
     border: none;
     background: transparent;
 }
 
-.dropdown-menu input {
-    margin: 5px;
-    width: calc(100% - 10px);
-}
-
-/* Card */
-.confirm-delete {
-    min-width: 4rem;
-    padding: 0;
-}
-
-/* Resume list */
-.resume-list .list-group-item {
-    padding: 0.75rem 1rem;
-}
-.resume-list a {
-    text-decoration: none;
 }

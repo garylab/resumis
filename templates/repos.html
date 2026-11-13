@@ -7,20 +7,20 @@
 
     {% include 'global/head.html' %}
 </head>
-<body class="bg-light">
+<body class="bg-gray-50">
 {% include 'global/navbar.html' %}
 
 <main class="content">
-    <div class="my-5">
-        <div class="container">
-            <h1 class="my-5 text-center">Select a repository and branch to continue.</h1>
+    <div class="my-12">
+        <div class="mx-auto w-full max-w-[960px] px-3">
+            <h1 class="my-12 text-center">Select a repository and branch to continue.</h1>
 
             <form action="{{ url_for('repo.save') }}" method="post">
-                <div class="row">
-                    <div class="col-12 col-md-8">
-                        <div class="mb-3">
-                            <label for="repoSelect" class="form-label">Select Repository</label>
-                            <select id="repoSelect" class="form-select" name="repo">
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                    <div class="min-w-0 md:col-span-2">
+                        <div class="mb-4">
+                            <label for="repoSelect" class="mb-2 block">Select Repository</label>
+                            <select id="repoSelect" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 disabled:bg-gray-100" name="repo">
                                 <option value="" selected disabled>Select a repository</option>
                                 {% for repo in repos %}
                                 <option value="{{ repo.full_name }}"
@@ -31,20 +31,20 @@
                         </div>
                     </div>
 
-                    <div class="col-12 col-md-4">
-                        <div class="mb-3">
-                            <label for="branchSelect" class="form-label">Select Branch</label>
-                            <select id="branchSelect" class="form-select" name="branch" disabled>
+                    <div class="min-w-0 min-w-0">
+                        <div class="mb-4">
+                            <label for="branchSelect" class="mb-2 block">Select Branch</label>
+                            <select id="branchSelect" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 disabled:bg-gray-100" name="branch" disabled>
                                 <option value="" selected disabled>Select a branch</option>
                                 <!-- Options will be populated dynamically -->
                             </select>
                         </div>
                     </div>
                 </div>
-                <div class="row my-4">
-                    <div class="col-md-12">
-                        <div class="mb-3 text-center">
-                            <button type="submit" class="btn btn-sm btn-primary me-2">Save</button>
+                <div class="grid grid-cols-1 gap-6 my-6">
+                    <div class="min-w-0">
+                        <div class="mb-4 text-center">
+                            <button type="submit" class="action-button text-sm bg-blue-600 text-white hover:bg-blue-700 me-2">Save</button>
                         </div>
                     </div>
                 </div>

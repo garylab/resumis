@@ -9,3 +9,7 @@ src/generated/
 public/static/fonts/
 test-results/
 playwright-report/
+
+public/static/css/tailwind.css
+public/static/img/icons.svg
+public/static/vendor/dompurify/

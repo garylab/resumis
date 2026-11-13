@@ -16,21 +16,21 @@
 
   {% include 'global/head.html' %}
 </head>
-<body class="bg-light">
+<body class="bg-gray-50">
 {% include 'global/navbar.html' %}
 
 <main class="content">
-  <div class="bg-primary mt-0 p-0" style="min-height: 450px;">
-    <div class="container">
-      <div style="padding-top: 7rem; padding-bottom: 3rem;">
-          <h1 class="text-darken text-center fw-bold" style="font-size: 3rem;">
-            Build your online <em class="text-yellow-500 fst-normal">Markdown Resume</em><br/>
-            then save to your <em class="text-yellow-500 fst-normal">Own GitHub</em>
+  <div class="home-hero mt-0 p-0">
+    <div class="mx-auto w-full max-w-[960px] px-3">
+      <div class="py-12 lg:pt-24 lg:pb-12">
+          <h1 class="text-darken text-center font-bold">
+            Build your online <em class="text-yellow-500 not-italic">Markdown Resume</em><br/>
+            then save to your <em class="text-yellow-500 not-italic">Own GitHub</em>
           </h1>
 
-          <div class="d-flex justify-content-center">
-            <div class="mt-4 d-inline-block">
-                <table class="table table-sm fw-light text-center small">
+          <div class="flex justify-center">
+            <div class="mt-6 inline-block">
+                <table class="w-full border-collapse [&_td]:px-2 [&_td]:py-1 [&_th]:px-2 [&_th]:py-1 [&_th]:text-center font-light text-center text-sm">
                     <thead>
                         <tr>
                             <th>Feature</th>
@@ -39,11 +39,11 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="text-left">Markdown format</td>
+                            <td>Markdown format</td>
                             <td>✅</td>
                         </tr>
                         <tr>
-                          <td class="text-left">Unlimited Resumes</td>
+                          <td>Unlimited Resumes</td>
                           <td>✅</td>
                         </tr>
                         <tr>
@@ -72,7 +72,7 @@
           </div>
 
           <div class="text-center">
-            <a class="btn btn-outline-yellow" href="/create/project-manager">
+            <a class="action-button action-outline" href="/create/project-manager">
               Try it now
             </a>
           </div>
@@ -81,23 +81,23 @@
 
   </div>
 
-  <div class="container">
-    <h2 class="text-center mt-5">Resume Templates</h2>
-    <p class="text-center fw-light text-muted small">Free to use</p>
+  <div class="mx-auto w-full max-w-[960px] px-3">
+    <h2 class="text-center mt-12">Resume Templates</h2>
+    <p class="text-center font-light text-gray-500 text-sm">Free to use</p>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 mt-4">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 mt-6">
 
       {% for name in template_names %}
-      <div class="col">
-        <div class="card border-0 bg-transparent mt-4">
+      <div class="min-w-0">
+        <div class="template-card rounded-lg bg-transparent mt-6 p-3 text-center">
           <a href="{{url_for('home.template', slug=to_slug(name))}}" class="text-center">
-            <img class="card-img-top border radius a4-thumbnail"
+            <img class="inline-block rounded a4-thumbnail"
                  src="{{url_for('static', filename='img/screenshots/data-scientist.png')}}"
                  alt="{{name}} Resume Template" title="{{name}} Resume Template">
           </a>
-          <div class="card-body px-0">
+          <div class="py-4 px-0">
 
-            <h3 class="card-title text-center">
+            <h3 class="mb-2 text-center">
               <a href="{{url_for('home.template', slug=to_slug(name))}}">
                 {{name}} Resume
               </a>

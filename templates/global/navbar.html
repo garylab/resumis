@@ -1,40 +1,32 @@
-<nav class="navbar navbar-expand-lg bg-primary">
-    <div class="container">
-      <a class="navbar-brand fw-600" href="/">{{sitename}}</a>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNav" aria-controls="navbarNav"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse fw-light" id="navbarNav">
-            <ul class="navbar-nav ms-auto mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link {{ 'active' if request.path == '/' else '' }}" aria-current="page" href="/">Home</a>
-                </li>
-                {% if user %}
-                    <li class="nav-item ms-3">
-                        <a class="nav-link" href="{{url_for('resume.get_resumes')}}">My Resumes</a>
-                    </li>
-                    <li class="nav-item dropdown ms-3">
-                        <button class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{user.name}}
-                            <span class="small text-success">{% if user.is_pro %}[Pro]{% endif %}</span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{{url_for('auth.logout')}}">Logout</a></li>
-                        </ul>
-                    </li>
-                {% else %}
-                    <li class="nav-item ms-3">
-                        <a class="btn btn-yellow fw-light" href="{{url_for('auth.login')}}">
-                            <i class="bi bi-github"></i> Sign in
-                        </a>
-                    </li>
-                {% endif %}
+<nav class="bg-orange-50 py-3">
+  <div class="mx-auto flex w-full max-w-[960px] flex-wrap items-center justify-between gap-3 px-3">
+    <a class="navbar-brand font-semibold text-xl" href="/">{{sitename}}</a>
+    <button class="rounded border border-gray-300 p-2 lg:hidden" type="button" data-nav-toggle
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <svg class="icon" aria-hidden="true"><use href="/static/img/icons.svg#menu"></use></svg>
+    </button>
+    <div class="hidden w-full lg:block lg:w-auto" id="navbarNav">
+      <ul class="flex flex-col gap-4 font-light lg:flex-row lg:items-center">
+        <li><a class="block py-1" {% if request.path == '/' %}aria-current="page"{% endif %} href="/">Home</a></li>
+        {% if user %}
+        <li><a class="block py-1" href="{{url_for('resume.get_resumes')}}">My Resumes</a></li>
+        <li>
+          <details class="relative" data-disclosure>
+            <summary class="flex items-center gap-2 py-1">
+              {{user.name}} <span class="text-sm text-green-700">{% if user.is_pro %}[Pro]{% endif %}</span>
+              <svg class="icon" aria-hidden="true"><use href="/static/img/icons.svg#chevron-down"></use></svg>
+            </summary>
+            <ul class="absolute right-0 z-20 min-w-32 rounded border border-gray-200 bg-white p-1 shadow-lg">
+              <li><a class="block rounded px-4 py-2 hover:bg-gray-100" href="{{url_for('auth.logout')}}">Logout</a></li>
             </ul>
-
-        </div>
+          </details>
+        </li>
+        {% else %}
+        <li><a class="action-button action-accent font-light" href="{{url_for('auth.login')}}">
+          <svg class="icon" aria-hidden="true"><use href="/static/img/icons.svg#log-in"></use></svg> Sign in
+        </a></li>
+        {% endif %}
+      </ul>
     </div>
+  </div>
 </nav>

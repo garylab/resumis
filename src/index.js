@@ -1,3 +1,4 @@
+import { validPhoto } from '../public/static/js/photo.js';
 import { Github, GithubError } from './github.js';
 import { loadSession, saveSession, loadRepoPreference, rememberRepo } from './session.js';
 import { render, fromSlug, urlFor } from './views.js';
@@ -225,24 +226,32 @@ export function createApp(fetcher = (...args) => fetch(...args)) {
         if (editMatch) {
           const name = editMatch[1];
           if (!validName(name) || !await github.has(name)) return text('Not Found', 404);
-          const [content, style] = await Promise.all([github.read(`${name}/resume.md`), github.read(`${name}/style.css`)]);
-          return page('resume.html', { seo: seo('Edit Resume'), old_name: name, name, content, style });
+          const [content, style, photoFile] = await Promise.all([
+            github.read(`${name}/resume.md`), github.read(`${name}/style.css`), github.get(`${name}/photo.jpg`, true),
+          ]);
+          let photo = photoFile?.encoding === 'base64' ? `data:image/jpeg;base64,${photoFile.content.replace(/\s/g, '')}` : '';
+          if (!validPhoto(photo)) photo = '';
+          return page('resume.html', { seo: seo('Edit Resume'), old_name: name, name, content, style, photo });
         }
         const name = field('name').trim();
         if (path === '/resume/save') {
           const oldName = field('oldName').trim();
           const content = field('content');
           const style = field('style');
+          const photo = field('photo');
+          if (!validPhoto(photo)) return error('Invalid photo. Please upload a JPG, PNG, or WebP image using the photo control.');
           if (!validName(name) || !content.trim() || (oldName && !validName(oldName))) return error('Invalid name or content');
           if (!oldName) {
             if (await github.has(name)) return error('Resume already exists');
             await github.create(`${name}/resume.md`, content);
             await github.create(`${name}/style.css`, style);
+            if (photo) await github.writePhoto(name, photo);
             return success('Resume created', editUrl(name));
           }
           if (oldName !== name && await github.has(name)) return error('Resume already exists');
           await github.update(`${oldName}/resume.md`, content);
           await github.update(`${oldName}/style.css`, style);
+          if (form.has('photo')) await github.writePhoto(oldName, photo);
           if (oldName !== name) {
             await github.duplicate(oldName, name);
             await github.remove(oldName);

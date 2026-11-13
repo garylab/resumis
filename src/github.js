@@ -60,8 +60,9 @@ export class Github {
     if (!Array.isArray(result)) throw new GithubError('Expected a resume folder', 400);
     return result;
   }
-  async read(path) {
-    const file = await this.get(path);
+  async read(path, optional = false) {
+    const file = await this.get(path, optional);
+    if (file === null) return null;
     if (typeof file.content !== 'string' || file.encoding !== 'base64') {
       throw new GithubError('GitHub did not return file contents', 502);
     }
@@ -86,11 +87,32 @@ export class Github {
       sha: file.sha, branch: this.branch,
     });
   }
+  async writePhoto(folder, photo) {
+    const path = `${folder}/photo.jpg`;
+    const file = await this.get(path, true);
+    if (!photo) {
+      if (file) await this.request('DELETE', this.contentsPath(path), {
+        message: `Delete [${path}]`, sha: file.sha, branch: this.branch,
+      });
+      return;
+    }
+    const content = photo.slice('data:image/jpeg;base64,'.length);
+    if (file && file.content.replace(/\s/g, '') === content) return;
+    await this.request('PUT', this.contentsPath(path), {
+      message: `Save [${path}]`, content,
+      ...(file ? { sha: file.sha } : {}), branch: this.branch,
+    });
+  }
   async duplicate(source, destination) {
     for (const item of await this.list(source)) {
       const path = `${destination}${item.path.slice(source.length)}`;
       if (item.type === 'dir') await this.duplicate(item.path, path);
-      else if (item.type === 'file') await this.create(path, await this.read(item.path));
+      else if (item.type === 'file') {
+        const file = await this.get(item.path);
+        await this.request('PUT', this.contentsPath(path), {
+          message: `Create [${path}]`, content: file.content, branch: this.branch,
+        });
+      }
     }
   }
   async remove(path) {

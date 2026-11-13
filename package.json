@@ -21,6 +21,10 @@
   },
   "devDependencies": {
     "@playwright/test": "1.65.0",
+    "@tailwindcss/cli": "^4.3.5",
+    "dompurify": "^3.4.17",
+    "lucide-static": "^1.72.0",
+    "tailwindcss": "^4.3.5",
     "wrangler": "4.160.0"
   }
 }

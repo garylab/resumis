@@ -98,7 +98,7 @@ test('site name and Markdown policies/footer are configured per request', async 
   });
   const home = await (await browser.request('/')).text();
   assert.match(home, /<title>My CV &amp; Careers -/);
-  assert.match(home, /class="navbar-brand fw-600" href="\/">My CV &amp; Careers<\/a>/);
+  assert.match(home, /class="navbar-brand font-semibold text-xl" href="\/">My CV &amp; Careers<\/a>/);
   const footer = home.match(/<footer\b[\s\S]*?<\/footer>/)[0];
   assert.match(footer, /<a[^>]*href="\/">My CV &amp; Careers<\/a>/);
   assert.match(footer, /Powered by <a[^>]*href="https:\/\/resumis.com">Resumis<\/a>/);
@@ -510,4 +510,35 @@ test('encrypted sessions reject tampering, wrong keys, expiration, and oversized
   assert.deepEqual(await openSession(token, env.SESSION_SECRET, 32 * 86400 * 1000), {});
   assert.deepEqual(await openSession('x'.repeat(5000), env.SESSION_SECRET), {});
   assert.deepEqual(await openSession('invalid', env.SESSION_SECRET), {});
+});
+
+test('photos save, reopen, rename, duplicate, replace and remove with their resume', async () => {
+  const browser = await client({ user, repo });
+  const photo = `data:image/jpeg;base64,${(await readFile(new URL('./fixtures/photo.jpg', import.meta.url))).toString('base64')}`;
+  const form = { name: 'Photo CV', content: '# My resume', style: 'body { color: black; }', photo };
+  assert.equal((await browser.request('/resume/save', { form })).status, 200);
+  assert.equal(`data:image/jpeg;base64,${browser.mock.files.get('Photo CV/photo.jpg').content.toString('base64')}`, photo);
+  assert.ok((await (await browser.request('/resume/edit/Photo%20CV')).text()).includes(photo));
+  // Older clients omitting the new field must preserve an existing photo.
+  const { photo: ignored, ...legacy } = form;
+  await browser.request('/resume/save', { form: { ...legacy, oldName: form.name } });
+  assert.equal(`data:image/jpeg;base64,${browser.mock.files.get('Photo CV/photo.jpg').content.toString('base64')}`, photo);
+  await browser.request('/resume/save', { form: { ...form, oldName: form.name, name: 'Renamed CV' } });
+  assert.equal(browser.mock.files.has('Photo CV/photo.jpg'), false);
+  assert.equal(`data:image/jpeg;base64,${browser.mock.files.get('Renamed CV/photo.jpg').content.toString('base64')}`, photo);
+  await browser.request('/resume/duplicate', { form: { name: 'Renamed CV' } });
+  assert.equal(`data:image/jpeg;base64,${browser.mock.files.get('Renamed CV_copy/photo.jpg').content.toString('base64')}`, photo);
+  await browser.request('/resume/save', { form: { ...form, name: 'Renamed CV', oldName: 'Renamed CV', photo: '' } });
+  assert.equal(browser.mock.files.has('Renamed CV/photo.jpg'), false);
+  assert.equal(browser.mock.files.has('Renamed CV_copy/photo.jpg'), true);
+  await browser.request('/resume/delete', { form: { name: 'Renamed CV_copy' } });
+  assert.equal(browser.mock.files.has('Renamed CV_copy/photo.jpg'), false);
+});
+
+test('invalid and oversized photo payloads are rejected before GitHub writes', async () => {
+  for (const photo of ['data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=', 'https://example.com/photo.jpg', 'data:image/jpeg;base64,AAAA', 'data:image/jpeg;base64,' + 'A'.repeat(350000)]) {
+    const browser = await client({ user, repo });
+    assert.equal((await browser.request('/resume/save', { form: { name: 'CV', content: '# CV', style: '', photo } })).status, 400);
+    assert.equal(browser.mock.calls.length, 0);
+  }
 });

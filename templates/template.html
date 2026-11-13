@@ -15,18 +15,18 @@
 
   {% include 'global/head.html' %}
 </head>
-<body class="bg-light template-page">
+<body class="bg-gray-50 template-page">
   {% include 'global/navbar.html' %}
 
-  <main class="container content">
-    <h1 class="text-center mt-5 mb-4">{{resume.name}} Resume Template</h1>
+  <main class="mx-auto w-full max-w-[960px] px-3 content">
+    <h1 class="text-center mt-12 mb-6">{{resume.name}} Resume Template</h1>
     <div class="text-center">
-      <a class="btn btn-outline-yellow" href="{{url_for('home.create_from_template', template_slug=to_slug(resume.name))}}">
+      <a class="action-button action-outline" href="{{url_for('home.create_from_template', template_slug=to_slug(resume.name))}}">
         Use This Template
       </a>
     </div>
 
-    <div id="template-preview" class="template-preview my-4 mx-auto">
+    <div id="template-preview" class="template-preview my-6 mx-auto">
       <div id="template-sheet" class="template-sheet">
         <iframe id="resume-content" title="{{resume.name}} resume preview"
                 sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
@@ -34,8 +34,8 @@
       </div>
     </div>
 
-    <div class="text-center my-4">
-      <a class="btn btn-outline-yellow" href="{{url_for('home.create_from_template', template_slug=to_slug(resume.name))}}">
+    <div class="text-center my-6">
+      <a class="action-button action-outline" href="{{url_for('home.create_from_template', template_slug=to_slug(resume.name))}}">
           Use This Template
       </a>
     </div>

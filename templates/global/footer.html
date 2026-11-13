@@ -1,8 +1,8 @@
-<footer class="mt-5 py-4 bg-darken">
-  <div class="container px-4 px-lg-5">
-    <div class="d-flex flex-wrap justify-content-center align-items-baseline gap-2 text-center text-light">
-      <span><a class="text-light" href="{{url_for('home.home')}}">{{sitename}}</a></span>
-      <span>Powered by <a class="text-light" href="https://resumis.com">Resumis</a></span>
+<footer class="mt-12 py-6 bg-slate-900">
+  <div class="mx-auto w-full max-w-[960px] px-3 px-6 lg:px-12">
+    <div class="flex flex-wrap justify-center items-baseline gap-2 text-center text-gray-100">
+      <span><a class="text-gray-100" href="{{url_for('home.home')}}">{{sitename}}</a></span>
+      <span>Powered by <a class="text-gray-100" href="https://resumis.com">Resumis</a></span>
       {% if footer_html %}
       <div class="footer-content">{{footer_html|safe}}</div>
       {% endif %}

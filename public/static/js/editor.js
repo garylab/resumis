@@ -1,3 +1,6 @@
+import DOMPurify from '../vendor/dompurify/purify.es.mjs';
+import { preparePhoto, validPhoto } from './photo.js';
+import { createIcon } from './icons.js';
 import { SETTINGS, FONTS, PRESETS, PRESET_ICONS, DEFAULTS, readAdjustments, updateStyle, clearAdjustments } from './style-settings.js';
 import { fitResumePreview } from './preview.js';
 import { initPanelResizers } from './panels.js';
@@ -10,10 +13,20 @@ const scroller = document.getElementById('preview-scroll');
 const sheet = document.getElementById('preview-sheet');
 const nameText = document.getElementById('name-text');
 const nameInput = document.getElementById('name-input');
+const photoData = document.getElementById('photo-data');
+const photoFile = document.getElementById('photo-file');
+const photoUpload = document.getElementById('upload-photo');
+const photoRemove = document.getElementById('remove-photo');
+const photoThumbnail = document.getElementById('photo-thumbnail');
+const photoStatus = document.getElementById('photo-status');
+let photoBusy = false;
 const controls = new Map();
 const options = { lineNumbers: false, lineWrapping: true, viewportMargin: 20, inputStyle: 'contenteditable' };
 const contentEditor = CodeMirror.fromTextArea(contentEl, { ...options, mode: 'markdown', spellcheck: true });
 const styleEditor = CodeMirror.fromTextArea(styleEl, { ...options, mode: 'css' });
+// Earlier square photos used sharp corners; keep their saved shape with rounded corners.
+styleEl.value = styleEditor.getValue().replace(/(--photo-shape-radius:\s*)0(?=;)/g, (_, prefix) => `${prefix}2mm`);
+styleEditor.setValue(styleEl.value);
 let applyingControls = false;
 let paper = 'A4';
 
@@ -39,7 +52,7 @@ function node(tag, className, text) {
 for (const [name, settings] of Object.entries(PRESETS)) {
   const button = node('button', '');
   button.type = 'button';
-  const icon = node('i', `bi ${PRESET_ICONS[name]}`);
+  const icon = createIcon(PRESET_ICONS[name]);
   icon.setAttribute('aria-hidden', 'true');
   button.append(icon, node('span', '', name));
   button.setAttribute('aria-pressed', 'false');
@@ -117,6 +130,19 @@ for (const group of ['Paper Size', 'Typography', 'Spacing', 'Layout', 'Colors'])
   document.getElementById(group === 'Paper Size' ? 'paper-section' : 'style-controls').append(section);
 }
 
+const photoShape = document.getElementById('photo-shape');
+const photoShapeSetting = SETTINGS.find(setting => setting.key === 'photoShape');
+for (const [value, label] of Object.entries(photoShapeSetting.options)) {
+  const button = node('button', '', label);
+  button.type = 'button';
+  button.dataset.value = value;
+  button.setAttribute('role', 'radio');
+  button.setAttribute('aria-checked', 'false');
+  button.addEventListener('click', () => applySettings({ photoShape: value }));
+  photoShape.append(button);
+}
+controls.set('photoShape', { input: photoShape, output: node('output'), setting: photoShapeSetting });
+
 function color(value, fallback) {
   const rgb = value.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
   return rgb ? '#' + rgb.slice(1, 4).map(channel => Number(channel).toString(16).padStart(2, '0')).join('') : fallback;
@@ -146,7 +172,12 @@ function readAppearance() {
     };
     readPages(styleNode.sheet.cssRules);
   }
+  const portrait = doc.querySelector('[data-resume-photo]');
+  const portraitStyle = portrait ? win.getComputedStyle(portrait) : null;
+  const radius = portraitStyle?.borderTopLeftRadius || '0';
+  const circular = radius.endsWith('%') ? parseFloat(radius) >= 50 : portraitStyle && parseFloat(radius) >= parseFloat(portraitStyle.width) / 2;
   const result = {
+    photoShape: circular ? '50%' : '2mm',
     font: body.fontFamily,
     headingFont: heading.fontFamily,
     fontSize: round(parseFloat(body.fontSize) * .75),
@@ -214,13 +245,79 @@ function warmFonts() {
 
 function render(contentChanged = false) {
   const scrollTop = scroller.scrollTop;
-  if (contentChanged) doc.body.innerHTML = marked.parse(contentEditor.getValue());
+  if (contentChanged) {
+    // Markdown can include HTML; discard executable markup before it enters the frame.
+    doc.body.replaceChildren(DOMPurify.sanitize(marked.parse(contentEditor.getValue()), {
+      USE_PROFILES: { html: true }, RETURN_DOM_FRAGMENT: true,
+    }));
+  }
+  renderPhoto();
   styleNode.textContent = styleEditor.getValue();
   doc.title = nameInput.value;
   syncControls();
   warmFonts();
   fitPreview();
   scroller.scrollTop = scrollTop;
+}
+
+function renderPhoto() {
+  const source = validPhoto(photoData.value) ? photoData.value : '';
+  for (const image of doc.querySelectorAll('img[src="photo.jpg"], img[data-resume-photo]')) {
+    if (!source) { image.remove(); continue; }
+    image.dataset.resumePhoto = '';
+    if (image.getAttribute('src') !== source) image.src = source;
+  }
+  if (source) photoThumbnail.src = source;
+  else photoThumbnail.removeAttribute('src');
+  photoThumbnail.classList.toggle('hidden', !source);
+  photoRemove.classList.toggle('hidden', !source);
+  photoUpload.textContent = source ? 'Replace photo' : 'Upload';
+}
+
+photoUpload.addEventListener('click', () => photoFile.click());
+photoFile.addEventListener('change', async () => {
+  const file = photoFile.files[0];
+  if (!file) return;
+  photoBusy = true;
+  photoUpload.disabled = photoRemove.disabled = true;
+  photoStatus.textContent = 'Preparing photo…';
+  try {
+    photoData.value = await preparePhoto(file);
+    ensurePhotoStyles();
+    const markdown = contentEditor.getValue();
+    if (!/!\[[^\]]*\]\(photo\.jpg\)/.test(markdown)) {
+      contentEditor.setValue(`![Profile photo](photo.jpg)\n\n${markdown}`);
+      contentEditor.setCursor(0, 0);
+    }
+    render(true);
+    photoStatus.textContent = 'Photo added. Save your resume to keep it.';
+  } catch (error) {
+    photoStatus.textContent = error.message;
+  } finally {
+    photoBusy = false;
+    photoUpload.disabled = photoRemove.disabled = false;
+    photoFile.value = '';
+  }
+});
+photoRemove.addEventListener('click', () => {
+  photoData.value = '';
+  contentEditor.setValue(contentEditor.getValue().replace(/!\[[^\]]*\]\(photo\.jpg\)\n{0,2}/g, ''));
+  render(true);
+  photoStatus.textContent = 'Photo removed. Save your resume to keep this change.';
+});
+// Do not save or print an old photo while the new one is being processed.
+document.getElementById('saveResume').addEventListener('submit', event => {
+  if (!photoBusy) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  photoStatus.textContent = 'Please wait for your photo to finish processing.';
+}, true);
+
+function ensurePhotoStyles() {
+  if (!photoData.value || !validPhoto(photoData.value) || styleEditor.getValue().includes('/* Photo layout */')) return;
+  const saved = readAdjustments(styleEditor.getValue());
+  applySettings(Object.fromEntries(['photoPosition', 'photoSize', 'photoRadius', 'photoShape']
+    .map(key => [key, saved[key] ?? DEFAULTS[key]])));
 }
 
 function applySettings(values) {
@@ -242,6 +339,7 @@ styleEditor.on('change', () => {
 
 document.getElementById('reset-style').addEventListener('click', () => {
   styleEditor.setValue(clearAdjustments(styleEditor.getValue()));
+  ensurePhotoStyles();
   document.getElementById('style-status').textContent = 'Visual adjustments reset. Original CSS restored.';
 });
 document.getElementById('advanced-css').addEventListener('toggle', event => {
@@ -255,8 +353,8 @@ function sizeNameInput() {
 }
 
 nameText.addEventListener('click', () => {
-  nameText.classList.add('d-none');
-  nameInput.classList.remove('d-none');
+  nameText.classList.add('hidden!');
+  nameInput.classList.remove('hidden!');
   sizeNameInput();
   nameInput.focus();
   nameInput.select();
@@ -264,9 +362,9 @@ nameText.addEventListener('click', () => {
 function finishRename() {
   // A textarea can receive pasted line breaks, which GitHub paths cannot hold.
   nameInput.value = nameInput.value.replace(/\s+/g, ' ').trim() || 'Untitled Resume';
-  nameText.replaceChildren(document.createTextNode(nameInput.value + ' '), node('i', 'bi bi-pencil'));
-  nameText.classList.remove('d-none');
-  nameInput.classList.add('d-none');
+  nameText.replaceChildren(document.createTextNode(nameInput.value + ' '), createIcon('pencil'));
+  nameText.classList.remove('hidden!');
+  nameInput.classList.add('hidden!');
   doc.title = nameInput.value;
 }
 nameInput.addEventListener('input', sizeNameInput);
@@ -275,7 +373,12 @@ nameInput.addEventListener('keydown', event => {
   if (event.key === 'Enter') { event.preventDefault(); nameInput.blur(); }
 });
 
-document.getElementById('export-pdf').addEventListener('click', () => {
+document.getElementById('export-pdf').addEventListener('click', async () => {
+  if (photoBusy) { photoStatus.textContent = 'Please wait for your photo to finish processing.'; return; }
+  const portrait = doc.querySelector('[data-resume-photo]');
+  if (portrait) {
+    try { await portrait.decode(); } catch { errorToast('The photo could not load. Replace or remove it before printing.'); return; }
+  }
   doc.title = nameInput.value;
   preview.contentWindow.focus();
   preview.contentWindow.print();
@@ -288,6 +391,7 @@ document.getElementById('saveResume').addEventListener('submit', () => {
 });
 initFormSubmits();
 initPanelResizers(document.querySelector('.editor-workspace'));
+ensurePhotoStyles();
 render(true);
 new ResizeObserver(fitPreview).observe(stage);
 doc.addEventListener('load', fitPreview, true);

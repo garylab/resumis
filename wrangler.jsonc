@@ -13,7 +13,7 @@
   },
   "build": {
     "command": "npm run build",
-    "watch_dir": ["templates", "data", "scripts"]
+    "watch_dir": ["templates", "data", "scripts", "styles", "public/static/js"]
   },
   "assets": {
     "directory": "./public",

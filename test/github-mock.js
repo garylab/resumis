@@ -70,7 +70,8 @@ export function githubMock() {
       if (files.has(path) && files.get(path).sha !== body.sha) {
         return Response.json({ message: 'SHA conflict' }, { status: 409 });
       }
-      put(path, Buffer.from(body.content, 'base64').toString('utf8'));
+      const decoded = Buffer.from(body.content, 'base64');
+      put(path, path.endsWith('/photo.jpg') ? decoded : decoded.toString('utf8'));
       return Response.json({ content: file(path) }, { status: 201 });
     }
     if (method === 'DELETE') {

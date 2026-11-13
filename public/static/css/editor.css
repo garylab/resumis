@@ -7,9 +7,9 @@
 .icon-btn:hover, .icon-btn:focus-visible { background: #fff5e7; border-color: #f4ba6d; color: #925b12; }
 .editor-title { flex-shrink: 0; position: relative; min-width: 0; padding: 12px 14px; border-bottom: 1px solid #eceef2; }
 .resume-name { max-width: 100%; border: 0; padding: 0; background: none; text-align: left; color: #252641; font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
-.resume-name i { margin-left: 6px; font-size: 12px; color: #9397a1; }
+.resume-name .icon { margin-left: 6px; font-size: 12px; color: #9397a1; }
 .editor-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.editor-actions .btn { padding-left: 1rem; padding-right: 1rem; white-space: nowrap; }
+.editor-actions .action-button { padding-left: 1rem; padding-right: 1rem; white-space: nowrap; }
 .editor-workspace { --preview-width: 537px; --appearance-width: 320px; position: relative; flex: 1; min-height: 0; display: grid;
   grid-template-columns: minmax(260px, 1fr) var(--preview-width) var(--appearance-width); grid-template-rows: minmax(0, 1fr); align-items: stretch; }
 .col-resizer { position: absolute; top: 0; bottom: 0; width: 7px; z-index: 3; cursor: col-resize; background: transparent; }
@@ -36,12 +36,12 @@ body.resizing-columns { cursor: col-resize; user-select: none; }
 .style-section legend + div { clear: both; }
 .style-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .style-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.style-switch button { border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 8px 2px; font-size: 12px; }
+.style-switch button { border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 7px 2px; font-size: 12px; }
 .style-switch button:hover, .style-switch button:focus-visible { background: #fff8ed; border-color: #f4ba6d; }
 .style-switch button[aria-checked="true"] { background: #fff5e7; color: #925b12; border-color: #f4ba6d; font-weight: 600; }
 .style-presets button { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 5px; border: 1px solid #e2e5eb; border-radius: 6px; background: white; color: #555b6e; padding: 7px 2px; font-size: 11px; }
-.style-presets button i { font-size: 14px; line-height: 1; color: #8a8e9b; }
-.style-presets button[aria-pressed="true"] i { color: #c87810; }
+.style-presets button .icon { font-size: 14px; line-height: 1; color: #8a8e9b; }
+.style-presets button[aria-pressed="true"] .icon { color: #c87810; }
 .style-presets button:hover, .style-presets button:focus-visible { background: #fff8ed; border-color: #f4ba6d; }
 .style-presets button[aria-pressed="true"] { background: #fff5e7; color: #925b12; border-color: #f4ba6d; }
 .style-field + .style-field { margin-top: 14px; }
@@ -95,3 +95,8 @@ body.resizing-columns { cursor: col-resize; user-select: none; }
   .preview-stage { flex: none; height: 430px; min-height: 0; padding: 12px 6px; }
   .style-section { border-right: 0; }
 }
+
+.photo-help-tooltip { display: none; position: absolute; top: -6px; left: 0; z-index: 5; max-width: 100%; padding: 8px 10px; border-radius: 6px; background: #35394f; color: white; font-size: 11px; font-weight: 400; line-height: 1.5; box-shadow: 0 3px 12px #242c3c20; }
+.style-section:has(#photo-help-button:hover) .photo-help-tooltip,
+.style-section:has(#photo-help-button:focus) .photo-help-tooltip,
+.photo-help-tooltip:hover { display: block; }
