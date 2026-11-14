@@ -5,6 +5,9 @@ import { SETTINGS, FONTS, PRESETS, PRESET_ICONS, DEFAULTS, readAdjustments, upda
 import { fitResumePreview } from './preview.js';
 import { initPanelResizers } from './panels.js';
 
+// Match the published renderer: bare URLs and emails stay plain text; links need [text](url) or <url>.
+marked.use({ tokenizer: { url() {} } });
+
 const contentEl = document.querySelector('[name="content"]');
 const styleEl = document.querySelector('[name="style"]');
 const preview = document.getElementById('preview');

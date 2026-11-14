@@ -58,6 +58,9 @@ h3, h4, h5 {font-size: 1rem;}
     border-top-left-radius: unset;
     border-top-right-radius: unset;
     font-size: 0.875rem;
+}
+
+.CodeMirror-lines {
     padding: 1rem;
 }
 

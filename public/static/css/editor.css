@@ -23,7 +23,9 @@ body.resizing-columns { cursor: col-resize; user-select: none; }
 /* Inset from the top and bottom of the screen, but flush against the preview. */
 .markdown-panel { margin: 12px 0; border: 1px solid #e0e3e8; border-right: 0; }
 .appearance-panel { border-right: 1px solid #e0e3e8; }
-.markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; padding: 16px 10px 16px 14px; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
+.markdown-panel .CodeMirror { border: 0 !important; border-radius: 0; line-height: 1.65; flex: 1; min-height: 0; height: auto; }
+/* Pad the lines, not the .CodeMirror root: root padding offsets mouse-to-text mapping and misplaces selections. */
+.markdown-panel .CodeMirror-lines { padding: 16px 10px 16px 14px; }
 /* The scrollbar belongs beside the paper, not against the appearance panel. */
 .preview-stage { background: #e9ecf0; padding: 14px 6px; overflow: hidden; flex: 1; min-height: 0; display: flex; justify-content: center; }
 .preview-scroll { max-height: 100%; overflow-y: auto; overflow-x: hidden; }
@@ -64,7 +66,8 @@ body.resizing-columns { cursor: col-resize; user-select: none; }
 .advanced-css { border-bottom: 0; }
 .advanced-css summary { font-size: 12px; color: #596175; cursor: pointer; }
 .advanced-css p { font-size: 11px; color: #858b99; line-height: 1.5; margin: 10px 0; }
-.advanced-css .CodeMirror { padding: 4px; font-size: 11px; height: 260px; border: 1px solid #e0e3e8 !important; }
+.advanced-css .CodeMirror { font-size: 11px; height: 260px; border: 1px solid #e0e3e8 !important; }
+.advanced-css .CodeMirror-lines { padding: 4px; }
 .advanced-css .CodeMirror-line { font-size: 11px; }
 .editor-title #name-input { width: 100%; padding: 0; font-size: 18px; font-weight: 600; line-height: 1.35; resize: none; overflow: hidden; }
 /* Stacked panels no longer fit one screen, so narrow layouts scroll the page. */
