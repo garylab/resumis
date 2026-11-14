@@ -397,4 +397,9 @@ initPanelResizers(document.querySelector('.editor-workspace'));
 ensurePhotoStyles();
 render(true);
 new ResizeObserver(fitPreview).observe(stage);
+// Resizing a column rewraps lines; without a refresh CodeMirror keeps stale line heights and clicks land on the wrong line.
+const editorResizer = new ResizeObserver(entries => {
+  for (const { target } of entries) target.CodeMirror?.refresh();
+});
+for (const editor of [contentEditor, styleEditor]) editorResizer.observe(editor.getWrapperElement());
 doc.addEventListener('load', fitPreview, true);
