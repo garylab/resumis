@@ -125,6 +125,14 @@ ul, ol {
     margin-bottom: 0.25rem;
 }
 
+/* Keep markers inside the item box: outside markers are clipped at the column edge when printing. */
 ul {
     columns: var(--list-columns, 2);
+    padding-left: 0;
+}
+
+ul > li {
+    list-style-position: inside;
+    padding-left: 1rem;
+    text-indent: -1rem;
 }
