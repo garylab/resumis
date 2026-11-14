@@ -1,24 +1,6 @@
 {% with messages = get_flashed_messages() %}
-{% if messages %}
-<div class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 space-y-2">
-  {% for message in messages %}
-  <div role="alert" class="rounded-lg bg-red-700 px-4 py-3 text-white shadow-lg" data-flash>
-    {{message}}
-    <button type="button" class="ml-3" data-dismiss-flash aria-label="Close notification">
-      <svg class="icon" aria-hidden="true"><use href="/static/img/icons.svg#x"></use></svg>
-    </button>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
+{% for message in messages %}<div hidden data-flash="error">{{message}}</div>{% endfor %}
 {% endwith %}
-
-<div id="toast-container" class="hidden fixed left-1/2 top-1/2 z-50 flex max-w-[90vw] -translate-x-1/2 -translate-y-1/2 items-center gap-3 rounded-lg px-4 py-3 text-white shadow-lg"
-     role="status" aria-live="polite" aria-atomic="true">
-  <div id="toast-text"></div>
-  <button type="button" data-dismiss-toast aria-label="Close notification">
-    <svg class="icon" aria-hidden="true"><use href="/static/img/icons.svg#x"></use></svg>
-  </button>
-</div>
+<div id="toast-container" class="pointer-events-none fixed top-4 right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3"></div>
 <script src="{{url_for('static', filename='js/script.js')}}"></script>
 <script>initUI();</script>

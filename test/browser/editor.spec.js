@@ -447,10 +447,10 @@ test('mobile navigation and notifications work without Bootstrap', async ({ page
   await expect(toggle).toBeHidden();
   await page.goto('/create/project-manager');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.locator('#toast-container')).toBeVisible();
-  await expect(page.locator('#toast-text')).toHaveText('Please login to continue');
+  await expect(page.locator('#toast-container .toast')).toBeVisible();
+  await expect(page.locator('#toast-container .toast-text')).toHaveText('Please login to continue');
   await page.getByRole('button', { name: 'Close notification' }).click();
-  await expect(page.locator('#toast-container')).toBeHidden();
+  await expect(page.locator('#toast-container .toast')).toHaveCount(0);
   expect(externalUI).toEqual([]);
   await expect(page.locator('#style-font optgroup, #style-headingFont optgroup')).toHaveCount(0);
   const icons = await page.locator('#style-presets button').evaluateAll(buttons => buttons.map(button => {

@@ -1,5 +1,3 @@
-let toastTimer;
-
 function initUI() {
     const toggle = document.querySelector('[data-nav-toggle]');
     toggle?.addEventListener('click', () => {
@@ -23,27 +21,77 @@ function initUI() {
             toggle.focus();
         }
     });
-    document.querySelector('[data-dismiss-toast]')?.addEventListener('click', () => {
-        clearTimeout(toastTimer);
-        document.getElementById('toast-container').classList.add('hidden');
-    });
+    // Server-side flash messages arrive as hidden nodes; show them through the same toaster.
     document.querySelectorAll('[data-flash]').forEach(flash => {
-        flash.querySelector('[data-dismiss-flash]').addEventListener('click', () => flash.remove());
-        setTimeout(() => flash.remove(), 5000);
+        showToast(flash.textContent.trim(), flash.dataset.flash || 'error');
+        flash.remove();
     });
 }
 
-function showToast(text, error = false) {
-    const toast = document.getElementById('toast-container');
-    clearTimeout(toastTimer);
-    toast.classList.remove('hidden', 'bg-red-700', 'bg-green-700');
-    toast.classList.add(error ? 'bg-red-700' : 'bg-green-700');
-    document.getElementById('toast-text').textContent = text;
-    toastTimer = setTimeout(() => toast.classList.add('hidden'), 5000);
+/**
+ * Toasts: stacked in the top-right corner, slide in, auto-dismiss, pause while hovered.
+ */
+const TOAST_STYLES = {
+    success: { icon: 'circle-check', tone: 'text-green-600', accent: 'bg-green-600' },
+    error: { icon: 'circle-alert', tone: 'text-red-600', accent: 'bg-red-600' },
+    info: { icon: 'info', tone: 'text-amber-600', accent: 'bg-amber-500' },
+};
+const TOAST_DURATION = 5000;
+
+function toastHost() {
+    let host = document.getElementById('toast-container');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'toast-container';
+        document.body.append(host);
+    }
+    host.className = 'pointer-events-none fixed top-4 right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3';
+    return host;
 }
 
-function errorToast(text) { showToast(text, true); }
-function successToast(text) { showToast(text); }
+function showToast(text, type = 'success') {
+    const style = TOAST_STYLES[type] || TOAST_STYLES.info;
+    const toast = document.createElement('div');
+    toast.className = 'toast pointer-events-auto relative flex translate-x-4 items-start gap-3 overflow-hidden rounded-xl '
+        + 'border border-gray-200 bg-white p-4 pl-5 text-sm text-gray-900 opacity-0 shadow-lg ring-1 ring-black/5 '
+        + 'transition-all duration-300 ease-out motion-reduce:transition-none';
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.innerHTML = `
+        <span class="absolute inset-y-0 left-0 w-1 ${style.accent}" aria-hidden="true"></span>
+        <svg class="icon mt-0.5 size-5 shrink-0 ${style.tone}" aria-hidden="true"><use href="/static/img/icons.svg#${style.icon}"></use></svg>
+        <div class="toast-text min-w-0 flex-1 leading-snug break-words"></div>
+        <button type="button" class="-m-1 shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                data-dismiss-toast aria-label="Close notification">
+            <svg class="icon" aria-hidden="true"><use href="/static/img/icons.svg#x"></use></svg>
+        </button>`;
+    toast.querySelector('.toast-text').textContent = text;
+
+    let timer;
+    const dismiss = () => {
+        clearTimeout(timer);
+        toast.classList.add('opacity-0', 'translate-x-4');
+        const remove = () => toast.remove();
+        toast.addEventListener('transitionend', remove, { once: true });
+        setTimeout(remove, 400);
+    };
+    const schedule = () => { clearTimeout(timer); timer = setTimeout(dismiss, TOAST_DURATION); };
+    toast.querySelector('[data-dismiss-toast]').addEventListener('click', dismiss);
+    toast.addEventListener('mouseenter', () => clearTimeout(timer));
+    toast.addEventListener('mouseleave', schedule);
+    toast.addEventListener('focusin', () => clearTimeout(timer));
+    toast.addEventListener('focusout', schedule);
+
+    toastHost().append(toast);
+    requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.remove('opacity-0', 'translate-x-4')));
+    schedule();
+    return toast;
+}
+
+function errorToast(text) { showToast(text, 'error'); }
+function successToast(text) { showToast(text, 'success'); }
+function infoToast(text) { showToast(text, 'info'); }
 
 /**
  * Forms

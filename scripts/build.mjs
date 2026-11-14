@@ -27,7 +27,7 @@ await Promise.all(['dist/purify.es.mjs', 'LICENSE'].map(file => copyFile(
 execFileSync(process.execPath, [`${root}node_modules/@tailwindcss/cli/dist/index.mjs`,
   '-i', `${root}styles/tailwind.css`, '-o', `${root}public/static/css/tailwind.css`, '--minify'], { stdio: 'inherit' });
 const iconNames = ['house', 'download', 'pencil', 'git-branch', 'log-in', 'file-text',
-  'external-link', 'copy', 'trash-2', 'menu', 'x', 'chevron-down', 'circle-alert', ...Object.values(PRESET_ICONS)];
+  'external-link', 'copy', 'trash-2', 'menu', 'x', 'chevron-down', 'circle-alert', 'circle-check', 'info', ...Object.values(PRESET_ICONS)];
 const symbols = await Promise.all([...new Set(iconNames)].map(async name => {
   const svg = await readFile(`${root}node_modules/lucide-static/icons/${name}.svg`, 'utf8');
   return `<symbol id="${name}" viewBox="0 0 24 24">${svg.match(/<svg[^>]*>([\s\S]*?)<\/svg>/)[1]}</symbol>`;
